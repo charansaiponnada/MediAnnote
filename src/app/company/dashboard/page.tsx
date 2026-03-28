@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { useAppStore, type MLModel } from "@/lib/store";
 import { formatUSDCRaw } from "@/lib/utils";
 import Link from "next/link";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import {
     ExternalLink, Brain, Loader2, CheckCircle, Zap,
-    BarChart3, Cpu, Play, Settings,
+    BarChart3, Cpu, Play, Settings, FileText
 } from "lucide-react";
 import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
@@ -22,6 +23,8 @@ export default function CompanyDashboard() {
     const [released, setReleased] = useState<string[]>([]);
     const [trainingBatch, setTrainingBatch] = useState<string | null>(null);
     const [metricsModalOpen, setMetricsModalOpen] = useState<string | null>(null);
+    const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+    const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
 
     const totalAnnotated = batches.reduce((a, b) => a + b.annotatedImages, 0);
     const totalImages = batches.reduce((a, b) => a + b.totalImages, 0);
@@ -77,6 +80,10 @@ export default function CompanyDashboard() {
         const batch = batches.find((b) => b.id === batchId);
         if (!batch) return;
         setTrainingBatch(batchId);
+        setTerminalLogs([]);
+        setIsTerminalOpen(true);
+
+        const epochsCalculated = batch.totalImages > 0 ? Math.min(100, Math.max(10, batch.totalImages * 2)) : 50;
 
         const modelId = `model-${Date.now()}`;
         const model: MLModel = {
@@ -84,25 +91,73 @@ export default function CompanyDashboard() {
             name: `${batch.title} — Classifier`,
             batchId,
             status: "queued",
-            totalEpochs: 50,
+            totalEpochs: epochsCalculated,
             createdAt: new Date().toISOString(),
             architecture: "ResNet-50 (Transfer Learning)",
         };
         dispatch({ type: "START_TRAINING", model });
 
-        // Simulate training progress
-        await new Promise((r) => setTimeout(r, 1000));
-        dispatch({ type: "UPDATE_MODEL", modelId, updates: { status: "training", epoch: 0 } });
+        try {
+            const res = await fetch("http://localhost:8000/train", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ batchId, totalEpochs: epochsCalculated, dataSize: batch.totalImages })
+            });
 
-        for (let epoch = 1; epoch <= 50; epoch++) {
-            await new Promise((r) => setTimeout(r, 120));
-            const acc = Math.min(0.98, 0.4 + (epoch / 50) * 0.55 + Math.random() * 0.03);
-            dispatch({ type: "UPDATE_MODEL", modelId, updates: { epoch, accuracy: parseFloat(acc.toFixed(4)) } });
+            if (!res.body) throw new Error("No response body");
+            dispatch({ type: "UPDATE_MODEL", modelId, updates: { status: "training", epoch: 0 } });
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+
+                const lines = buffer.split(/\r?\n\r?\n/);
+                buffer = lines.pop() || "";
+
+                for (const line of lines) {
+                    if (line.startsWith("data: ")) {
+                        const dataStr = line.slice(6);
+                        try {
+                            const parsed = JSON.parse(dataStr);
+                            if (parsed.type === "log") {
+                                setTerminalLogs(prev => [...prev, parsed.message]);
+                                const epochMatch = parsed.message.match(/Epoch (\d+)\/(\d+)/);
+                                if (epochMatch) {
+                                    dispatch({ type: "UPDATE_MODEL", modelId, updates: { epoch: parseInt(epochMatch[1]) } });
+                                }
+                            } else if (parsed.type === "complete") {
+                                dispatch({
+                                    type: "UPDATE_MODEL", modelId, updates: {
+                                        status: "completed",
+                                        accuracy: parsed.accuracy / 100,
+                                        epoch: epochsCalculated,
+                                        metrics: parsed
+                                    }
+                                });
+                            }
+                        } catch (e) {
+                            // parse error, ignore incomplete chunk
+                        }
+                    }
+                }
+            }
+
+            setTrainingBatch(null);
+            setTimeout(() => setIsTerminalOpen(false), 2000);
+            toast.success(`Model training complete!`);
+
+        } catch (error) {
+            console.error("Training failed:", error);
+            toast.error("Failed to connect to Python ML Service. Did you run the python server?");
+            dispatch({ type: "UPDATE_MODEL", modelId, updates: { status: "failed" } });
+            setTrainingBatch(null);
+            setIsTerminalOpen(false);
         }
-
-        dispatch({ type: "UPDATE_MODEL", modelId, updates: { status: "completed" } });
-        setTrainingBatch(null);
-        toast.success(`Model training complete! Accuracy: ${(state.models.find(m => m.id === modelId)?.accuracy || 0.95 * 100).toFixed(1)}%`);
     };
 
     return (
@@ -287,12 +342,14 @@ export default function CompanyDashboard() {
                                                 <button className="btn-secondary" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }} onClick={() => setMetricsModalOpen(model.name)}>
                                                     <BarChart3 size={14} /> View Metrics
                                                 </button>
-                                                <button className="btn-primary" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }} onClick={async () => {
-                                                    toast.loading(`Deploying ${model.name}…`, { id: "deploy" });
+                                                <button className="btn-primary" style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "linear-gradient(90deg, #FFD21E, #F97316)", color: "#000", border: "none" }} onClick={async () => {
+                                                    toast.loading(`Authenticating with Hugging Face...`, { id: "hf" });
+                                                    await new Promise(r => setTimeout(r, 1500));
+                                                    toast.loading(`Pushing ${model.name} to Hub...`, { id: "hf" });
                                                     await new Promise(r => setTimeout(r, 2000));
-                                                    toast.success(`Endpoint Live: \napi.mediannote.io/v1/infer`, { id: "deploy" });
+                                                    toast.success(`Model Published to 🤗 Hub!`, { id: "hf", style: { border: "1px solid #FFD21E", color: "#fff", background: "#111" } });
                                                 }}>
-                                                    <Zap size={14} /> Deploy API
+                                                    <span style={{ fontSize: "1.1rem" }}>🤗</span> Push to HF Hub
                                                 </button>
                                             </div>
                                         )}
@@ -304,34 +361,153 @@ export default function CompanyDashboard() {
                 )}
             </div>
 
-            {/* Metrics Modal */}
-            {metricsModalOpen && (
-                <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
-                    <div style={{ background: "var(--surface)", border: "1px solid var(--surface-high)", padding: "2rem", borderRadius: "1rem", width: "90%", maxWidth: 600 }}>
-                        <h2 className="headline-md" style={{ marginBottom: "1rem" }}>{metricsModalOpen} - Evaluation Report</h2>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.5rem" }}>
-                            <div style={{ background: "var(--surface-low)", padding: "1rem", borderRadius: "0.5rem" }}>
-                                <div className="label-sm" style={{ color: "var(--primary-fixed)" }}>F1-Score</div>
-                                <div className="title-lg">0.942</div>
+            {/* Terminal Modal */}
+            {isTerminalOpen && (
+                <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, backdropFilter: "blur(4px)" }}>
+                    <div style={{ background: "#000", border: "1px solid var(--surface-high)", borderRadius: "0.5rem", width: "90%", maxWidth: 800, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 40px rgba(0,0,0,0.5)" }}>
+                        <div style={{ background: "#111", padding: "0.75rem 1rem", borderBottom: "1px solid #333", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                <Cpu size={14} color="var(--primary-fixed)" />
+                                <span className="label-sm" style={{ color: "var(--primary-fixed)", fontFamily: "monospace" }}>medi-annote-ml-worker-01</span>
                             </div>
-                            <div style={{ background: "var(--surface-low)", padding: "1rem", borderRadius: "0.5rem" }}>
-                                <div className="label-sm" style={{ color: "var(--primary-fixed)" }}>Precision / Recall</div>
-                                <div className="title-lg">0.95 / 0.93</div>
+                            <div style={{ display: "flex", gap: "0.4rem" }}>
+                                <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FF5F56" }}></div>
+                                <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FFBD2E" }}></div>
+                                <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#27C93F" }}></div>
                             </div>
                         </div>
-                        <div style={{ background: "black", padding: "1rem", borderRadius: "0.5rem", marginBottom: "1.5rem", fontFamily: "monospace", color: "var(--accent-emerald)", fontSize: "0.85rem", whiteSpace: "pre-wrap" }}>
-                            {`Confusion Matrix
-=================
-     P   N
-P  | 98  2 |
-N  | 3   97|`}
-                        </div>
-                        <div style={{ textAlign: "right" }}>
-                            <button className="btn-secondary" onClick={() => setMetricsModalOpen(null)}>Close Registry</button>
+                        <div style={{ padding: "1.5rem", height: 400, overflowY: "auto", fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace", fontSize: "0.85rem", color: "#A3A3A3", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                            {terminalLogs.length === 0 && <span className="animate-pulse">Waiting for connection to Python ML Service (http://localhost:8000)...</span>}
+                            {terminalLogs.map((log, i) => (
+                                <div key={i} style={{ color: log.includes("Epoch") ? "var(--on-surface)" : (log.includes("[INFO]") ? "var(--accent-cyan)" : "#A3A3A3") }}>
+                                    <span style={{ color: "#555" }}>{new Date().toISOString().split("T")[1].slice(0, 12)}</span> &nbsp; {log}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
             )}
+
+            {/* Metrics Modal */}
+            {metricsModalOpen && (() => {
+                const modelName = metricsModalOpen;
+                const modelData = state.models.find((m) => m.name === modelName);
+                const metrics = modelData?.metrics;
+
+                return (
+                    <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
+                        <div style={{ background: "var(--surface)", border: "1px solid var(--surface-high)", padding: "2.5rem", borderRadius: "1rem", width: "95%", maxWidth: 900, maxHeight: "90vh", overflowY: "auto" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
+                                <div>
+                                    <h2 className="headline-md" style={{ marginBottom: "0.25rem" }}>Model Evaluation Report</h2>
+                                    <p className="body-md" style={{ color: "var(--on-surface-variant)" }}>{modelName}</p>
+                                </div>
+                                <div style={{ display: "flex", gap: "0.5rem" }}>
+                                    <button className="btn-primary" style={{ display: "flex", alignItems: "center", gap: "0.4rem" }} onClick={async () => {
+                                        const el = document.getElementById("pdf-report-container");
+                                        if (!el) return;
+                                        toast.loading("Generating professional PDF report...", { id: "pdf" });
+                                        try {
+                                            const html2canvas = (await import("html2canvas")).default;
+                                            const { jsPDF } = await import("jspdf");
+                                            const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#0a0a0a" });
+                                            const imgData = canvas.toDataURL("image/png");
+                                            const pdf = new jsPDF("l", "mm", "a4");
+                                            const pdfWidth = pdf.internal.pageSize.getWidth();
+                                            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                                            pdf.addImage(imgData, "PNG", 0, 10, pdfWidth, pdfHeight);
+                                            pdf.save(`MediAnnote_Report_${modelName}.pdf`);
+                                            toast.success("PDF Downloaded!", { id: "pdf" });
+                                        } catch (err) {
+                                            console.error(err);
+                                            toast.error("Failed to generate PDF", { id: "pdf" });
+                                        }
+                                    }}>
+                                        <FileText size={16} /> Download PDF
+                                    </button>
+                                    <button className="btn-secondary" onClick={() => setMetricsModalOpen(null)}>Close</button>
+                                </div>
+                            </div>
+
+                            {metrics ? (
+                                <div id="pdf-report-container" style={{ padding: "1rem", background: "var(--surface)", margin: "-1rem" }}>
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem", marginBottom: "2rem" }}>
+                                        {[
+                                            { l: "Global Accuracy", v: `${metrics.accuracy}%` },
+                                            { l: "F1-Score", v: metrics.f1_score },
+                                            { l: "Precision", v: metrics.precision },
+                                            { l: "Recall", v: metrics.recall },
+                                        ].map(s => (
+                                            <div key={s.l} style={{ background: "var(--surface-low)", padding: "1.25rem", borderRadius: "0.75rem" }}>
+                                                <div className="label-sm" style={{ color: "var(--primary-fixed)", marginBottom: "0.25rem" }}>{s.l}</div>
+                                                <div className="title-lg">{s.v}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1.5rem" }}>
+
+                                        <div style={{ background: "var(--surface-low)", padding: "1.5rem", borderRadius: "0.75rem" }}>
+                                            <h3 className="label-md" style={{ color: "var(--primary-fixed)", marginBottom: "1.5rem" }}>Training vs Validation Loss</h3>
+                                            <div style={{ height: 250, width: "100%" }}>
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <LineChart data={metrics.chart_data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                                                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                                                        <XAxis dataKey="epoch" stroke="#888" tick={{ fill: '#888', fontSize: 12 }} />
+                                                        <YAxis stroke="#888" tick={{ fill: '#888', fontSize: 12 }} />
+                                                        <Tooltip
+                                                            contentStyle={{ backgroundColor: 'var(--surface-high)', border: '1px solid var(--surface-highest)', borderRadius: '8px' }}
+                                                            itemStyle={{ fontSize: 13, color: 'var(--on-surface)' }}
+                                                        />
+                                                        <Line type="monotone" dataKey="train_loss" name="Train Loss" stroke="var(--primary-fixed)" strokeWidth={2} dot={false} />
+                                                        <Line type="monotone" dataKey="val_loss" name="Val Loss" stroke="var(--accent-cyan)" strokeWidth={2} dot={false} />
+                                                    </LineChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ background: "var(--surface-low)", padding: "1.5rem", borderRadius: "0.75rem", display: "flex", flexDirection: "column" }}>
+                                            <h3 className="label-md" style={{ color: "var(--primary-fixed)", marginBottom: "1.5rem" }}>Confusion Matrix (Holdout)</h3>
+                                            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                <div style={{ display: "grid", gridTemplateColumns: "auto 1fr 1fr", gap: "4px", width: "100%" }}>
+                                                    {/* Header */}
+                                                    <div></div>
+                                                    <div className="label-sm" style={{ textAlign: "center", color: "var(--on-surface-variant)" }}>Pred Pos</div>
+                                                    <div className="label-sm" style={{ textAlign: "center", color: "var(--on-surface-variant)" }}>Pred Neg</div>
+
+                                                    {/* True Pos Row */}
+                                                    <div className="label-sm" style={{ alignSelf: "center", color: "var(--on-surface-variant)" }}>Actual Pos</div>
+                                                    <div style={{ background: "var(--accent-emerald-dim)", color: "var(--accent-emerald)", padding: "1rem", textAlign: "center", borderRadius: "4px", fontWeight: "bold" }}>
+                                                        {metrics.confusion_matrix[0][0]}
+                                                    </div>
+                                                    <div style={{ background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", padding: "1rem", textAlign: "center", borderRadius: "4px" }}>
+                                                        {metrics.confusion_matrix[0][1]}
+                                                    </div>
+
+                                                    {/* True Neg Row */}
+                                                    <div className="label-sm" style={{ alignSelf: "center", color: "var(--on-surface-variant)" }}>Actual Neg</div>
+                                                    <div style={{ background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", padding: "1rem", textAlign: "center", borderRadius: "4px" }}>
+                                                        {metrics.confusion_matrix[1][0]}
+                                                    </div>
+                                                    <div style={{ background: "var(--surface-high)", color: "var(--on-surface)", padding: "1rem", textAlign: "center", borderRadius: "4px", fontWeight: "bold" }}>
+                                                        {metrics.confusion_matrix[1][1]}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            ) : (
+                                <div style={{ padding: "4rem", textAlign: "center", color: "var(--on-surface-variant)" }}>
+                                    <Loader2 size={32} className="animate-spin" style={{ margin: "0 auto 1rem" }} />
+                                    <p>Loading advanced metrics from registry...</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            })()}
         </div>
     );
 }

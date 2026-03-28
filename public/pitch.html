@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MediAnnote — Pitch Deck</title>
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reset.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     <style>
         :root {
             --surface: #050505;
@@ -27,8 +29,11 @@
             background-color: var(--surface);
             color: var(--on-surface);
         }
-        
-        .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+
+        .reveal h1,
+        .reveal h2,
+        .reveal h3,
+        .reveal h4 {
             font-family: 'Inter', sans-serif;
             font-weight: 700;
             color: #FFFFFF;
@@ -37,9 +42,20 @@
             letter-spacing: -0.02em;
         }
 
-        .reveal h1 { font-size: 3.5em; margin-bottom: 20px; }
-        .reveal h2 { font-size: 2.5em; margin-bottom: 30px; }
-        .reveal h3 { font-size: 1.8em; color: var(--accent-cyan); }
+        .reveal h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+        }
+
+        .reveal h2 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+
+        .reveal h3 {
+            font-size: 1.8em;
+            color: var(--accent-cyan);
+        }
 
         .reveal p {
             font-size: 1.2em;
@@ -53,16 +69,26 @@
             line-height: 1.6;
         }
 
-        .reveal li { margin-bottom: 12px; }
+        .reveal li {
+            margin-bottom: 12px;
+        }
 
-        .reveal strong { color: var(--on-surface); font-weight: 600; }
+        .reveal strong {
+            color: var(--on-surface);
+            font-weight: 600;
+        }
 
-        .accent { color: var(--accent-cyan) !important; }
-        .emerald { color: var(--accent-emerald) !important; }
+        .accent {
+            color: var(--accent-cyan) !important;
+        }
+
+        .emerald {
+            color: var(--accent-emerald) !important;
+        }
 
         .box {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
             padding: 30px;
             margin-top: 20px;
@@ -74,6 +100,7 @@
         .gradient-text {
             background: linear-gradient(135deg, #FFFFFF 0%, #A3A3A3 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -93,10 +120,16 @@
             border-radius: 2px;
         }
 
-        .reveal .controls { color: var(--accent-cyan); }
-        .reveal .progress { color: var(--accent-cyan); }
+        .reveal .controls {
+            color: var(--accent-cyan);
+        }
+
+        .reveal .progress {
+            color: var(--accent-cyan);
+        }
     </style>
 </head>
+
 <body>
     <div class="reveal">
         <div class="slides">
@@ -105,11 +138,27 @@
             <section>
                 <h1 class="gradient-text">MediAnnote</h1>
                 <div class="monolith-line"></div>
-                <h3 style="font-weight: 400; letter-spacing: -0.01em;">Turning Medical Expertise into Verified AI Gold.</h3>
+                <h3 style="font-weight: 400; letter-spacing: -0.01em;">
+                    A specialization platform for doctors to annotate images, train ML models, and get paid.
+                </h3>
                 <p style="margin-top: 40px; font-size: 0.9em;">Transparent. Secure. Fair.</p>
             </section>
 
-            <!-- The Problem -->
+            <!-- The Problem Statement -->
+            <section>
+                <h2>The <span class="accent">Problem Statement</span></h2>
+                <div class="box" style="text-align: center; max-width: 850px; margin: 0 auto; padding: 40px;">
+                    <p style="font-size: 1.4em; line-height: 1.6; color: white; font-style: italic;">
+                        "A specialization platform for doctors (in specialized fields) to annotate images and get paid
+                        for annotation. The annotated data is used for training an ML model."
+                    </p>
+                </div>
+                <p style="margin-top: 30px; font-size: 1.1em;">We built exactly this, but engineered for the
+                    <strong>trustless Web3 era</strong>.
+                </p>
+            </section>
+
+            <!-- Expanding the Problem -->
             <section>
                 <h2>The Medical AI <span class="accent">Bottleneck</span></h2>
                 <div class="grid-2">
@@ -135,13 +184,17 @@
             <!-- The Solution -->
             <section>
                 <h2>The <span class="emerald">Solution</span></h2>
-                <p>A Web3-powered marketplace connecting verified medical specialists directly with healthcare AI startups.</p>
-                
+                <p>A Web3-powered marketplace connecting verified medical specialists directly with healthcare AI
+                    startups.</p>
+
                 <ul style="margin-top: 40px; display: inline-block; text-align: left;">
                     <li><strong class="emerald">Immutable Provenance:</strong> Annotation hashes stored on-chain.</li>
-                    <li><strong class="emerald">Trustless Payments:</strong> USDC Escrow auto-releases on quality consensus.</li>
-                    <li><strong class="emerald">Verified Experts:</strong> Doctors are credentialed and issued Soulbound Tokens (SBTs).</li>
-                    <li><strong class="emerald">Clinical Standard:</strong> Native DICOM viewer and precise bounding-box/polygon tooling.</li>
+                    <li><strong class="emerald">Trustless Payments:</strong> USDC Escrow auto-releases on quality
+                        consensus.</li>
+                    <li><strong class="emerald">Verified Experts:</strong> Doctors are credentialed and issued Soulbound
+                        Tokens (SBTs).</li>
+                    <li><strong class="emerald">Clinical Standard:</strong> Native DICOM viewer and precise
+                        bounding-box/polygon tooling.</li>
                 </ul>
             </section>
 
@@ -151,31 +204,112 @@
                 <p>Traditional centralized data platforms require blind trust.</p>
                 <div class="box">
                     <ul>
-                        <li><strong>Escrow Contracts:</strong> Guarantee doctors are paid exactly what was promised, exactly when the threshold is met.</li>
-                        <li><strong>Soulbound Tokens (SBTs):</strong> Create immutable, non-transferable identities, tracking a doctor's lifelong accuracy and reputation score.</li>
-                        <li><strong>Regulatory Audit Trails:</strong> Every timestamp and annotation hash is stored on Polygon, perfect for FDA 510(k) submissions.</li>
+                        <li><strong>Escrow Contracts:</strong> Guarantee doctors are paid exactly what was promised,
+                            exactly when the threshold is met.</li>
+                        <li><strong>Soulbound Tokens (SBTs):</strong> Create immutable, non-transferable identities,
+                            tracking a doctor's lifelong accuracy and reputation score.</li>
+                        <li><strong>Regulatory Audit Trails:</strong> Every timestamp and annotation hash is stored on
+                            Polygon, perfect for FDA 510(k) submissions.</li>
                     </ul>
                 </div>
             </section>
 
-            <!-- Architecture -->
+
+
+            <!-- Tech Stack (Criteria 1) -->
             <section>
-                <h2>Tech <span class="gradient-text">Stack</span></h2>
+                <h2>A Scalable, <span class="gradient-text">Polyglot Tech Stack</span></h2>
                 <div class="grid-2">
                     <div style="text-align: left;">
-                        <p><strong class="accent">Frontend:</strong> Next.js 14, React, TailwindCSS</p>
-                        <p><strong class="accent">Annotations:</strong> Konva.js (Canvas Overlay), Medical Imagery API</p>
-                        <p><strong class="accent">Web3:</strong> Wagmi, Viem, ConnectKit</p>
-                        <p><strong class="accent">Smart Contracts:</strong> Solidity (Hardhat) deployed to Polygon</p>
+                        <p><strong class="accent">Frontend:</strong> Next.js 14, Zustand, TailwindCSS, Recharts</p>
+                        <p><strong class="accent">MLOps Core:</strong> Python, FastAPI, SSE (Starlette)</p>
+                        <p><strong class="accent">Storage Pipeline:</strong> IndexedDB (idb-keyval), HTML5 Canvas, Blob
+                            URLs</p>
+                        <p><strong class="accent">Web3 Ecosystem:</strong> Wagmi, Viem, Polygon Amoy Testnet</p>
+                        <p><strong class="accent">Data Rendering:</strong> Konva.js, jsPDF, html2canvas</p>
                     </div>
                     <div class="box" style="margin-top:0;">
-                        <p style="font-size: 0.9em; text-align: center; color: white;">
-                            A frictionless "Dual-Rail" system.<br>
-                            If you don't have MetaMask, you can still use the platform in Demo/Web2 mode.
+                        <h4 style="color: var(--accent-emerald); font-size: 1.1em; margin-bottom: 10px;">
+                            Industry-Oriented Architecture</h4>
+                        <p style="font-size: 0.9em; text-align: left; color: white;">
+                            We bypassed simplistic monoliths in favor of a <strong>heterogeneous polyglot
+                                microservice</strong> architecture. Heavy lifting (ML processing, SSE streams) is
+                            cleanly decoupled into a Python FastAPI service, while the high-fidelity UI runs blazingly
+                            fast in a Next.js Edge environment.
                         </p>
                     </div>
                 </div>
             </section>
+
+
+
+            <!-- Execution (Criteria 2) -->
+            <section>
+                <h2>Rapid <span class="emerald">Execution</span></h2>
+                <div class="box">
+                    <p style="margin-bottom: 15px;"><strong class="emerald">What we built within the timeframe:</strong>
+                    </p>
+                    <ul style="font-size: 0.95em;">
+                        <li><strong>From zero to a full-stack MVP:</strong> 11+ complex, responsive frontend routes
+                            (Doctor portal, Company dashboard, Workspace, Admin panel).</li>
+                        <li><strong>Complete Web3 Integration:</strong> Authored, compiled, and deployed 3 independent
+                            Solidity Smart Contracts (Escrow, MockUSDC, DoctorSBT) and wired them to the frontend via
+                            Wagmi.</li>
+                        <li><strong>Fully Functional Python Backend:</strong> Built a standalone FastAPI server that
+                            coordinates real-time Epoch data across ports.</li>
+                        <li><strong>Working Pipeline:</strong> No smoke and mirrors. You can upload an image, annotate
+                            it, generate mathematically correct COCO JSON data, and mint an SBT on a live testnet.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Complexity (Criteria 3) -->
+            <section>
+                <h2>Technical <span class="accent">Depth & Complexity</span></h2>
+                <div class="box">
+                    <ul style="font-size: 0.95em;">
+                        <li><strong>Scalable Local Storage:</strong> Zero-latency image loading using `idb-keyval`,
+                            efficiently mapping massive DICOM/X-Ray blobs to Zustand state by reference to prevent
+                            browser OOM crashes.</li>
+                        <li><strong>Asynchronous MLOps Simulation:</strong> A FastAPI Python Backend streams live model
+                            epochs directly into our UI Terminal using <em>Server-Sent Events (SSE)</em> with dynamic
+                            custom CRLF stream parsers.</li>
+                        <li><strong>Regulatory Export Pipeline & DataViz:</strong> Built DOM-scraping algorithms
+                            (`html2canvas` + `jsPDF`) to compile interactive <em>Recharts</em> SVGs into A4 PDF Reports.
+                        </li>
+                        <li><strong>Decentralized P2P Escrow:</strong> Stripped out centralized admin keys, allowing
+                            data requesters independent, trustless release of USDC funds via blockchain consensus.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Vision (Criteria 4) -->
+            <section>
+                <h2>Product <span class="emerald">Vision & UX</span></h2>
+                <p style="max-width: 800px; margin: 0 auto; margin-bottom: 20px;">
+                    We created a meticulous UX wrapped in an industry-standard aesthetic we call the <strong
+                        class="accent">"Clinical Monolith"</strong>.
+                </p>
+                <div class="grid-2">
+                    <div class="box" style="text-align: left; padding: 20px;">
+                        <h4 style="color: white; font-size: 1.1em; margin-bottom: 10px;">Flawless UI/UX</h4>
+                        <p style="font-size: 0.85em; margin-top: 10px;">
+                            Subtle micro-animations, responsive data grids, interactive CSS tooltips, and real-time
+                            Toast notifications provide continuous feedback at every user touchpoint.
+                        </p>
+                    </div>
+                    <div class="box" style="text-align: left; padding: 20px;">
+                        <h4 style="color: var(--accent-emerald); font-size: 1.1em; margin-bottom: 10px;">"Dual-Rail"
+                            Demo Mode</h4>
+                        <p style="font-size: 0.85em; margin-top: 10px;">
+                            We built graceful degradation logic. If a judge lacks MetaMask, the app seamlessly falls
+                            back to <em>Demo Mechanics</em>, ensuring the idea flows perfectly to any audience.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+
 
             <!-- User Journey 1 -->
             <section>
@@ -189,6 +323,8 @@
                 </ol>
             </section>
 
+
+
             <!-- User Journey 2 -->
             <section>
                 <h2>How It Works: <span class="emerald">The Doctor</span></h2>
@@ -201,15 +337,20 @@
                 </ol>
             </section>
 
+
+
             <!-- Business Model -->
             <section>
                 <h2>Business <span class="gradient-text">Model</span></h2>
                 <p>Monetization designed for massive scale.</p>
                 <div class="box">
                     <ul>
-                        <li><strong>10% Protocol Fee:</strong> Deducted directly from on-chain escrow upon successful settlement.</li>
-                        <li><strong>MAT Token Utility:</strong> Pay fees in MAT for a 20% discount. Doctors stake MAT for priority high-paying tasks.</li>
-                        <li><strong>Secondary Royalties:</strong> 2% perpetual smart-contract royalties to annotators if datasets are resold.</li>
+                        <li><strong>10% Protocol Fee:</strong> Deducted directly from on-chain escrow upon successful
+                            settlement.</li>
+                        <li><strong>MAT Token Utility:</strong> Pay fees in MAT for a 20% discount. Doctors stake MAT
+                            for priority high-paying tasks.</li>
+                        <li><strong>Secondary Royalties:</strong> 2% perpetual smart-contract royalties to annotators if
+                            datasets are resold.</li>
                     </ul>
                 </div>
             </section>
@@ -218,10 +359,13 @@
             <section>
                 <h2>Future <span class="accent">Roadmap</span></h2>
                 <ul style="margin-top: 40px;">
-                    <li><strong class="accent">Phase 1:</strong> Scale Radiology + Integrations with National Medical Councils.</li>
+                    <li><strong class="accent">Phase 1:</strong> Scale Radiology + Integrations with National Medical
+                        Councils.</li>
                     <li><strong class="accent">Phase 2:</strong> AI Pre-Annotation (MedSAM) to 10x doctor speed.</li>
-                    <li><strong class="accent">Phase 3:</strong> Federated Learning (using secure data directly behind hospital firewalls).</li>
-                    <li><strong class="accent">Phase 4:</strong> Expansion to Legal & Scientific verifiable annotation markets.</li>
+                    <li><strong class="accent">Phase 3:</strong> Federated Learning (using secure data directly behind
+                        hospital firewalls).</li>
+                    <li><strong class="accent">Phase 4:</strong> Expansion to Legal & Scientific verifiable annotation
+                        markets.</li>
                 </ul>
             </section>
 
@@ -231,7 +375,9 @@
                 <p>Let's see MediAnnote in action.</p>
                 <div class="monolith-line" style="background: var(--accent-emerald);"></div>
                 <div style="margin-top: 40px;">
-                    <a href="/" target="_blank" style="color: var(--on-surface); text-decoration: none; border: 1px solid var(--primary-fixed); padding: 10px 20px; border-radius: 6px; font-size: 0.8em; margin-right: 15px;">Launch Platform</a>
+                    <a href="/" target="_blank"
+                        style="color: var(--on-surface); text-decoration: none; border: 1px solid var(--primary-fixed); padding: 10px 20px; border-radius: 6px; font-size: 0.8em; margin-right: 15px;">Launch
+                        Platform</a>
                 </div>
             </section>
 
@@ -242,7 +388,7 @@
     <script>
         Reveal.initialize({
             hash: true,
-            transition: 'fade', 
+            transition: 'fade',
             backgroundTransition: 'fade',
             controls: true,
             progress: true,
@@ -252,4 +398,5 @@
         });
     </script>
 </body>
+
 </html>

@@ -39,6 +39,7 @@ export interface AnnotationBatch {
     iaaScore: number;
     txHash?: string;
     assignedDoctors: string[];
+    uploadedImageKeys?: string[];
 }
 
 export interface Annotation {

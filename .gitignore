@@ -10,6 +10,8 @@
 !.yarn/releases
 !.yarn/versions
 
+.venv/
+ml-service\__pycache__\
 # testing
 /coverage
 

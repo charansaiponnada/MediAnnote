@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import { CheckCircle, ExternalLink, Download, BarChart3, Image as ImageIcon, Clock, FileText, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { formatUSDCRaw, truncateAddress } from "@/lib/utils";
@@ -22,6 +22,40 @@ export default function DatasetDetail({ params }: { params: Promise<{ id: string
     const [galleryOpen, setGalleryOpen] = useState(false);
 
     const batch = state.batches.find((b) => b.id === id);
+    const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
+
+    useEffect(() => {
+        if (!batch?.uploadedImageKeys?.length || !galleryOpen) return;
+        const batchAnnotations = state.annotations[batch.id] || [];
+
+        let mounted = true;
+        let createdUrls: string[] = [];
+
+        const loadImages = async () => {
+            const { get } = await import("idb-keyval");
+            const urls: Record<number, string> = {};
+            for (const ann of batchAnnotations) {
+                const idx = ann.imageIndex;
+                if (!urls[idx]) {
+                    const key = batch.uploadedImageKeys![idx % batch.uploadedImageKeys!.length];
+                    const file = await get(key);
+                    if (file) {
+                        const url = URL.createObjectURL(file as Blob);
+                        urls[idx] = url;
+                        createdUrls.push(url);
+                    }
+                }
+            }
+            if (mounted) setImageUrls(urls);
+        };
+        loadImages();
+
+        return () => {
+            mounted = false;
+            createdUrls.forEach(url => URL.revokeObjectURL(url));
+        }
+    }, [batch, galleryOpen, state.annotations]);
+
     if (!batch) return <div style={{ color: "var(--on-surface)", padding: "2rem", textAlign: "center" }}>Dataset not found.</div>;
 
     const progress = batch.totalImages > 0 ? (batch.annotatedImages / batch.totalImages) * 100 : 0;
@@ -30,6 +64,52 @@ export default function DatasetDetail({ params }: { params: Promise<{ id: string
     const images = getImagesForBatchType(batch.imageType);
     const imageCount = Math.min(batch.totalImages, 12);
     const batchAnnotations = state.annotations[batch.id] || [];
+
+    const handleExportCOCO = () => {
+        const categories = batch.labels.map((lbl, i) => ({ id: i + 1, name: lbl }));
+        const categoryMap = Object.fromEntries(categories.map(c => [c.name, c.id]));
+
+        const imagesList = [];
+        const annotationsList = [];
+        let annId = 1;
+
+        for (let i = 0; i < batch.totalImages; i++) {
+            const fileName = batch.uploadedImageKeys?.[i] || `image_${i + 1}.jpg`;
+            imagesList.push({ id: i + 1, file_name: fileName, width: 400, height: 400 });
+
+            const imgAnns = batchAnnotations.filter(a => a.imageIndex === i);
+            for (const a of imgAnns) {
+                if (a.x !== undefined && a.width !== undefined) {
+                    annotationsList.push({
+                        id: annId++,
+                        image_id: i + 1,
+                        category_id: categoryMap[a.label] || 1,
+                        bbox: [Math.round(a.x), Math.round(a.y), Math.round(a.width), Math.round(a.height)],
+                        area: Math.round(a.width * a.height),
+                        iscrowd: 0,
+                    });
+                }
+            }
+        }
+
+        const cocoData = {
+            info: { description: batch.title, date_created: new Date().toISOString() },
+            images: imagesList,
+            annotations: annotationsList,
+            categories: categories
+        };
+
+        const blob = new Blob([JSON.stringify(cocoData, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `dataset_${batch.id}_coco.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success("Dataset Exported to COCO JSON format!");
+    };
 
     return (
         <div style={{ background: "var(--surface)", minHeight: "100svh" }}>
@@ -122,7 +202,7 @@ export default function DatasetDetail({ params }: { params: Promise<{ id: string
                             <div style={{ marginTop: "1.5rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
                                 {batchAnnotations.map((ann, idx) => {
                                     // Make sure index is within our mock images
-                                    const imgSrc = images[ann.imageIndex % images.length];
+                                    const imgSrc = imageUrls[ann.imageIndex] || images[ann.imageIndex % images.length];
                                     const cHex = labelColors[ann.label] || "#22c55e";
                                     return (
                                         <div key={ann.id || idx} style={{ background: "var(--surface-highest)", borderRadius: "0.5rem", overflow: "hidden" }}>
@@ -171,8 +251,8 @@ export default function DatasetDetail({ params }: { params: Promise<{ id: string
                 )}
 
                 {progress === 100 && (
-                    <button className="btn-primary" style={{ width: "100%", display: "flex", justifyContent: "center", gap: "0.5rem", padding: "1rem" }} onClick={() => toast.success("Dataset Exported to COCO JSON format!")}>
-                        <Download size={16} /> Download Annotated Dataset (JSON + Images)
+                    <button className="btn-primary" style={{ width: "100%", display: "flex", justifyContent: "center", gap: "0.5rem", padding: "1rem" }} onClick={handleExportCOCO}>
+                        <Download size={16} /> Download Annotated Dataset (JSON)
                     </button>
                 )}
 

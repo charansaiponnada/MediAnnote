@@ -90,9 +90,10 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
      * @param batchId Batch to release
      * @param annotators Final list of annotators to distribute funds to
      */
-    function releasePayment(bytes32 batchId, address[] calldata annotators) external onlyOwner nonReentrant {
+    function releasePayment(bytes32 batchId, address[] calldata annotators) external nonReentrant {
         Batch storage batch = batches[batchId];
         require(batch.exists, "Batch does not exist");
+        require(msg.sender == batch.company, "Only the company that deposited can release funds");
         require(!batch.released, "Already released");
         require(annotators.length > 0, "Need at least one annotator");
 

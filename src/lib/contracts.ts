@@ -1,19 +1,18 @@
-import deployments from "../../contracts/deployments.json";
 import escrowAbi from "../../contracts/abis/AnnotationEscrow.json";
 import doctorSbtAbi from "../../contracts/abis/DoctorSBT.json";
 import mockUsdcAbi from "../../contracts/abis/MockUSDC.json";
 
 export const CONTRACTS = {
     MockUSDC: {
-        address: deployments.contracts.MockUSDC.address as `0x${string}`,
+        address: "0x89D6DEa5aAd02c842774C379cBE09e4B9471f4D1" as `0x${string}`,
         abi: mockUsdcAbi,
     },
     AnnotationEscrow: {
-        address: deployments.contracts.AnnotationEscrow.address as `0x${string}`,
+        address: "0xF21C9414B3b070D22F5D77f98A4D8041c28b58df" as `0x${string}`,
         abi: escrowAbi,
     },
     DoctorSBT: {
-        address: deployments.contracts.DoctorSBT.address as `0x${string}`,
+        address: "0xA6d15b0416EfaEBa76FBE00b0B4dfebBe6A45Fdf" as `0x${string}`,
         abi: doctorSbtAbi,
     },
 } as const;

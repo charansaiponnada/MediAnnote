@@ -31,6 +31,7 @@ export interface MLModel {
     totalEpochs: number;
     createdAt: string;
     architecture: string;
+    metrics?: any; // Final SSE response object containing precision/recall/confusion/chart_data
 }
 
 interface AppState {

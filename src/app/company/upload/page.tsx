@@ -28,6 +28,7 @@ export default function CompanyUpload() {
     const [ratePerImg, setRate] = useState(2.5);
     const [loading, setLoading] = useState(false);
     const [funded, setFunded] = useState(false);
+    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
     const { writeContractAsync } = useWriteContract();
 
@@ -47,6 +48,17 @@ export default function CompanyUpload() {
         const batchIdBytes = pad(stringToHex(batchString), { size: 32 });
         const amountParsed = parseUnits(totalBudget.toString(), 6);
         let txHash = "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
+
+        let uploadedImageKeys: string[] = [];
+        if (uploadedFiles.length > 0) {
+            toast.loading("Saving large images locally...", { id: "tx" });
+            const { set } = await import("idb-keyval");
+            for (let i = 0; i < uploadedFiles.length; i++) {
+                const key = `${batchString}-img-${i}`;
+                await set(key, uploadedFiles[i]);
+                uploadedImageKeys.push(key);
+            }
+        }
 
         if (!isConnected) {
             toast.loading("DEMO MODE: Simulating Escrow deposit…", { id: "tx" });
@@ -108,6 +120,7 @@ export default function CompanyUpload() {
                 iaaScore: 0,
                 txHash,
                 assignedDoctors: [],
+                uploadedImageKeys,
             },
         });
 
@@ -208,6 +221,7 @@ export default function CompanyUpload() {
                                 <input type="file" id="fileUpload" multiple onChange={(e) => {
                                     if (e.target.files?.length) {
                                         setCount(e.target.files.length);
+                                        setUploadedFiles(Array.from(e.target.files));
                                         toast.success(`${e.target.files.length} images queued for upload!`);
                                     }
                                 }} style={{ display: "none" }} />

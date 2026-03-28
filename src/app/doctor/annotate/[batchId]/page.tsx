@@ -50,7 +50,7 @@ export default function AnnotateWorkspace({
 
     // Real medical images for this batch type
     const batchImages = getImagesForBatchType(batch.imageType);
-    const imageCount = Math.min(batch.totalImages, 12);
+    const imageCount = batch.uploadedImageKeys?.length || Math.min(batch.totalImages, 12);
 
     const [currentImage, setCurrentImage] = useState(0);
     const [tool, setTool] = useState<Tool>("bbox");
@@ -77,18 +77,42 @@ export default function AnnotateWorkspace({
 
     // Load real medical image
     useEffect(() => {
-        const imgUrl = batchImages[currentImage % batchImages.length] || fallbackXraySVG;
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => setLoadedImage(img);
-        img.onerror = () => {
-            // Fallback to SVG
-            const fb = new Image();
-            fb.onload = () => setLoadedImage(fb);
-            fb.src = fallbackXraySVG;
+        let activeUrl: string | null = null;
+
+        const loadImg = async () => {
+            let imgUrl = fallbackXraySVG;
+
+            if (batch.uploadedImageKeys && batch.uploadedImageKeys.length > 0) {
+                const key = batch.uploadedImageKeys[currentImage % batch.uploadedImageKeys.length];
+                const { get } = await import("idb-keyval");
+                const file = await get(key);
+                if (file) {
+                    imgUrl = URL.createObjectURL(file as Blob);
+                    activeUrl = imgUrl;
+                }
+            } else {
+                imgUrl = batchImages[currentImage % batchImages.length] || fallbackXraySVG;
+            }
+
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.onload = () => setLoadedImage(img);
+            img.onerror = () => {
+                const fb = new Image();
+                fb.onload = () => setLoadedImage(fb);
+                fb.src = fallbackXraySVG;
+            };
+            img.src = imgUrl;
         };
-        img.src = imgUrl;
-    }, [currentImage, batchImages]);
+
+        loadImg();
+
+        return () => {
+            if (activeUrl && activeUrl.startsWith("blob:")) {
+                URL.revokeObjectURL(activeUrl);
+            }
+        };
+    }, [currentImage, batchImages, batch.uploadedImageKeys]);
 
     // Draw canvas
     const drawCanvas = useCallback(() => {
