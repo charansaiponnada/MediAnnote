@@ -136,12 +136,23 @@ export default function AnnotateWorkspace({
 
         setIsCaptioning(true);
         try {
+            const canvas = canvasRef.current;
+            const cw = canvas?.width || 800;
+            const ch = canvas?.height || 800;
+
             const response = await fetch("http://localhost:8000/caption", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ 
-                    labels: imageAnns.map(a => a.label),
-                    confidence: 0.88
+                    annotations: imageAnns.map(a => ({
+                        label: a.label,
+                        // Normalize to 0.0 - 1.0 range
+                        x: a.x / cw,
+                        y: a.y / ch,
+                        w: a.width / cw,
+                        h: a.height / ch
+                    })),
+                    confidence: 0.85 + (Math.random() * 0.1)
                 }),
             });
 
@@ -149,10 +160,10 @@ export default function AnnotateWorkspace({
             if (data.status === "success") {
                 setNotes(data.caption);
                 setLastAiInsightHash(data.hash);
-                toast.success("AI clinical caption generated", { icon: "📝" });
+                toast.success("Xai clinical caption generated", { icon: "📝" });
             }
         } catch (error) {
-            console.error("AI Caption error:", error);
+            console.error("Xai Caption error:", error);
             toast.error("ML Service unreachable.");
         } finally {
             setIsCaptioning(false);

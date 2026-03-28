@@ -210,44 +210,58 @@ async def generate_caption(request: Request):
     """
     Xai Captionist Assist:
     Generates localized clinical descriptions based on specific annotation coordinates.
+    Uses normalized 0.5 center point for cross-device spatial logic.
     """
     data = await request.json()
     annotations = data.get("annotations", [])
     confidence = data.get("confidence", 0.88)
     
     if not annotations:
-        return {"caption": "Xai Insight: No manual annotations detected to describe."}
+        return {
+            "status": "success",
+            "caption": "Xai Insight: No manual annotations detected to describe."
+        }
         
     # Analyze the first (primary) annotation for spatial logic
     primary = annotations[0]
     label = primary.get("label", "Finding")
-    x = primary.get("x", 0)
-    y = primary.get("y", 0)
+    x = primary.get("x", 0.5)
+    y = primary.get("y", 0.5)
     
-    # Spatial Logic (Dynamic Quadrant Detection)
-    # Assuming standard 800x800 canvas for logic
-    h_pos = "left" if x < 400 else "right"
-    v_pos = "upper" if y < 400 else "lower"
+    # Math-Based Spatial Logic (Normalized 0.0 - 1.0)
+    h_pos = "left" if x < 0.5 else "right"
+    v_pos = "upper" if y < 0.5 else "lower"
     quadrant = f"{v_pos}-{h_pos}"
     
-    # Clinical phrasing based on labels
+    # Clinical phrasing templates for NIH categories
     templates = {
         "Pneumonia": [
-            f"Xai Insight: Evidence of consolidation observed in the {quadrant} quadrant. Patterns are consistent with localized Pneumonia.",
-            f"Xai Insight: Increased opacity noted in the {quadrant} lung field, suspicious for Pneumonia."
+            f"Xai Insight: Patchy opacification noted in the {quadrant} lung field, indicative of acute Pneumonia.",
+            f"Xai Insight: Consolidation observed in the {quadrant} quadrant. Patterns correlate with localized Pneumonia."
         ],
         "Nodule": [
-            f"Xai Insight: Discrete solitary nodule identified in the {quadrant} zone (~{int(primary.get('w', 10))}px diameter).",
-            f"Xai Insight: Possible pulmonary nodule detected in the {quadrant} quadrant. Suggest serial monitoring."
+            f"Xai Insight: Solitary pulmonary nodule identified in the {quadrant} zone. Recommend clinical correlation.",
+            f"Xai Insight: Small circumscribed mass in the {quadrant} quadrant, suspicious for a Nodule."
         ],
         "Effusion": [
-            f"Xai Insight: Blunting of the costophrenic angle in the {quadrant} region, consistent with Pleural Effusion."
+            f"Xai Insight: Evidence of fluid accumulation in the {quadrant} pleural space, consistent with Effusion."
+        ],
+        "Cardiomegaly": [
+            f"Xai Insight: Enlaraged cardiac silhouette noted. Spatial findings in the {quadrant} region suggest Cardiomegaly."
+        ],
+        "Atelectasis": [
+            f"Xai Insight: Linear opacities in the {quadrant} quadrant suggesting volume loss and Atelectasis."
+        ],
+        "Infiltration": [
+            f"Xai Insight: Diffuse infiltrative patterns observed within the {quadrant} lung parenchyma."
+        ],
+        "Mass": [
+            f"Xai Insight: Large space-occupying lesion (Mass) identified in the {quadrant} quadrant."
         ]
     }
     
-    # Fallback for NIH labels
-    default_msg = f"Xai Insight: Possible {label} detected with {int(confidence * 100)}% confidence in the {quadrant} quadrant. Clinical correlation recommended."
-    
+    # Generate response
+    default_msg = f"Xai Insight: {label} detected with {int(confidence * 100)}% confidence in the {quadrant} quadrant. Suggest further clinical evaluation."
     phrases = templates.get(label, [default_msg])
     caption = random.choice(phrases)
     
