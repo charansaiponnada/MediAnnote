@@ -208,26 +208,53 @@ async def scrub_phi(request: Request):
 @app.post("/caption")
 async def generate_caption(request: Request):
     """
-    AI Captionist Assist:
-    Generates a textual description of detected anomalies to assist doctors.
+    Xai Captionist Assist:
+    Generates localized clinical descriptions based on specific annotation coordinates.
     """
     data = await request.json()
-    labels = data.get("labels", [])
-    confidence = data.get("confidence", 0.85)
+    annotations = data.get("annotations", [])
+    confidence = data.get("confidence", 0.88)
     
-    if not labels:
-        return {"caption": "AI Insight: No significant anomalies detected in this view."}
+    if not annotations:
+        return {"caption": "Xai Insight: No manual annotations detected to describe."}
         
-    primary_label = labels[0]
-    quadrants = ["upper-left", "upper-right", "lower-left", "lower-right"]
-    quadrant = random.choice(quadrants)
+    # Analyze the first (primary) annotation for spatial logic
+    primary = annotations[0]
+    label = primary.get("label", "Finding")
+    x = primary.get("x", 0)
+    y = primary.get("y", 0)
     
-    caption = f"AI Insight: Possible {primary_label} detected with {int(confidence * 100)}% confidence in the {quadrant} quadrant. Recommend further clinical correlation."
+    # Spatial Logic (Dynamic Quadrant Detection)
+    # Assuming standard 800x800 canvas for logic
+    h_pos = "left" if x < 400 else "right"
+    v_pos = "upper" if y < 400 else "lower"
+    quadrant = f"{v_pos}-{h_pos}"
+    
+    # Clinical phrasing based on labels
+    templates = {
+        "Pneumonia": [
+            f"Xai Insight: Evidence of consolidation observed in the {quadrant} quadrant. Patterns are consistent with localized Pneumonia.",
+            f"Xai Insight: Increased opacity noted in the {quadrant} lung field, suspicious for Pneumonia."
+        ],
+        "Nodule": [
+            f"Xai Insight: Discrete solitary nodule identified in the {quadrant} zone (~{int(primary.get('w', 10))}px diameter).",
+            f"Xai Insight: Possible pulmonary nodule detected in the {quadrant} quadrant. Suggest serial monitoring."
+        ],
+        "Effusion": [
+            f"Xai Insight: Blunting of the costophrenic angle in the {quadrant} region, consistent with Pleural Effusion."
+        ]
+    }
+    
+    # Fallback for NIH labels
+    default_msg = f"Xai Insight: Possible {label} detected with {int(confidence * 100)}% confidence in the {quadrant} quadrant. Clinical correlation recommended."
+    
+    phrases = templates.get(label, [default_msg])
+    caption = random.choice(phrases)
     
     return {
         "status": "success",
         "caption": caption,
-        "hash": f"0x{random.getrandbits(256):064x}" # Simulated SHA-256 hash
+        "hash": f"0x{random.getrandbits(256):064x}"
     }
 
 @app.get("/fetch-external")
