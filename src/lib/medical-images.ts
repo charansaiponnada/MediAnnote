@@ -5,6 +5,7 @@ export const chestXrayImages = [
     "/medical/xray-1.jpg",
     "/medical/xray-2.jpg",
     "/medical/xray-3.jpg",
+    "/medical/xray-4.jpg",
 ];
 
 // Retinal OCT images (public domain)
