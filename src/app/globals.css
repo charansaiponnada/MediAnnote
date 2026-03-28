@@ -1,0 +1,528 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+/* =====================================================
+   CLINICAL MONOLITH — Design Token Definitions
+   ===================================================== */
+:root {
+  /* Surface Hierarchy */
+  --surface-lowest: #0E0E0E;
+  --surface: #131313;
+  --surface-low: #1B1B1B;
+  --surface-container: #1F1F1F;
+  --surface-high: #2A2A2A;
+  --surface-bright: #393939;
+  --surface-highest: #353535;
+
+  /* Primary / Foreground */
+  --primary: #FFFFFF;
+  --primary-container: #D4D4D4;
+  --primary-fixed: #5D5F5F;
+  --on-primary: #1A1C1C;
+  --on-surface: #E5E5E5;
+  --on-surface-variant: #C6C6C6;
+  --outline-variant: rgba(71, 71, 71, 0.2);
+  --outline-focus: #FFFFFF;
+
+  /* Semantic accents — subtle, not garish */
+  --accent-emerald: #34D399;
+  --accent-emerald-dim: rgba(52, 211, 153, 0.1);
+  --accent-cyan: #22D3EE;
+  --accent-cyan-dim: rgba(34, 211, 238, 0.1);
+  --accent-purple: #A78BFA;
+  --accent-amber: #FCD34D;
+  --accent-red: #F87171;
+
+  /* Globals */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.75rem;
+  --radius-full: 9999px;
+
+  background: var(--surface);
+  color: var(--on-surface-variant);
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  font-weight: 500;
+  /* Medium weight for legibility on dark */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* =====================================================
+   CUSTOM SCROLLBAR
+   ===================================================== */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* =====================================================
+   TYPOGRAPHY SCALE
+   ===================================================== */
+
+/* Display — for hero numbers (hash rates, stats) */
+.display-lg {
+  font-size: 3.5rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.display-md {
+  font-size: 2.75rem;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+/* Headlines */
+.headline-lg {
+  font-size: 2rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.headline-md {
+  font-size: 1.75rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* Titles */
+.title-lg {
+  font-size: 1.375rem;
+  line-height: 1.3;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.title-md {
+  font-size: 1.125rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--on-surface);
+}
+
+/* Body */
+.body-lg {
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+}
+
+.body-md {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+}
+
+/* Labels — ALL CAPS, widened tracking */
+.label-md {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--primary-fixed);
+}
+
+.label-sm {
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--primary-fixed);
+}
+
+/* =====================================================
+   SURFACE UTILITIES
+   ===================================================== */
+.surface {
+  background: var(--surface);
+}
+
+.surface-low {
+  background: var(--surface-low);
+}
+
+.surface-container {
+  background: var(--surface-container);
+}
+
+.surface-high {
+  background: var(--surface-high);
+}
+
+.surface-bright {
+  background: var(--surface-bright);
+}
+
+.surface-highest {
+  background: var(--surface-highest);
+}
+
+.surface-lowest {
+  background: var(--surface-lowest);
+}
+
+/* =====================================================
+   CARD — Tonal separation, NO border rule
+   ===================================================== */
+.card {
+  background: var(--surface-container);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-recessed {
+  background: var(--surface-lowest);
+  border-radius: var(--radius-lg);
+}
+
+.card-elevated {
+  background: var(--surface-high);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Ghost border – accessibility-level whisper */
+.ghost-border {
+  border: 1px solid var(--outline-variant);
+}
+
+/* Input ghost border */
+.input-field {
+  background: var(--surface-lowest);
+  border: 1px solid rgba(71, 71, 71, 0.2);
+  border-radius: var(--radius-md);
+  color: var(--on-surface);
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.625rem 1rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.input-field::placeholder {
+  color: var(--primary-fixed);
+}
+
+.input-field:focus {
+  border-color: var(--outline-focus);
+}
+
+/* =====================================================
+   BUTTONS
+   ===================================================== */
+
+/* Primary — metallic gradient */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #FFFFFF 0%, #D4D4D4 100%);
+  color: var(--on-primary);
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+  border: none;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+.btn-primary:hover {
+  filter: brightness(0.95);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Secondary */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-highest);
+  color: var(--on-surface);
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 1px solid rgba(71, 71, 71, 0.2);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--surface-bright);
+}
+
+/* Tertiary — text only */
+.btn-tertiary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  background: transparent;
+  color: var(--primary);
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  text-underline-offset: 3px;
+  text-decoration: none;
+}
+
+.btn-tertiary::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 100%;
+  height: 1px;
+  background: var(--primary-fixed);
+  transition: right 0.2s ease;
+}
+
+.btn-tertiary:hover::after {
+  right: 0;
+}
+
+/* =====================================================
+   SIGNATURE COMPONENTS
+   ===================================================== */
+
+/* Hash Chip */
+.hash-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--surface-high);
+  border-radius: var(--radius-full);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.6875rem;
+  color: var(--primary-fixed);
+  letter-spacing: 0.03em;
+}
+
+/* Status Pulse — live indicator */
+.status-pulse {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-pulse::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.4);
+  animation: pulse-live 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.status-pulse.accent-green::before {
+  background: var(--accent-emerald);
+  box-shadow: 0 0 8px 2px rgba(52, 211, 153, 0.4);
+}
+
+.status-pulse.accent-cyan::before {
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px 2px rgba(34, 211, 238, 0.4);
+}
+
+@keyframes pulse-live {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Tier Badge */
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tier-bronze {
+  background: rgba(180, 100, 40, 0.12);
+  color: #C48A4A;
+}
+
+.tier-silver {
+  background: rgba(160, 160, 160, 0.12);
+  color: #A0A0A0;
+}
+
+.tier-gold {
+  background: rgba(234, 179, 8, 0.12);
+  color: #EAB308;
+}
+
+.tier-platinum {
+  background: rgba(167, 139, 250, 0.12);
+  color: #A78BFA;
+}
+
+/* =====================================================
+   PROGRESS BAR
+   ===================================================== */
+.progress-track {
+  height: 3px;
+  background: var(--surface-low);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-emerald) 0%, var(--accent-cyan) 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
+
+/* =====================================================
+   FLOATING PANEL (modal/dropdown)
+   ===================================================== */
+.floating-panel {
+  background: rgba(53, 53, 53, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(71, 71, 71, 0.15);
+}
+
+/* =====================================================
+   NAVIGATION
+   ===================================================== */
+.nav-root {
+  background: var(--surface);
+  border-bottom: none;
+  /* No-Line Rule */
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  /* Implied separator via subtle shadow */
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--primary-fixed);
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--on-surface);
+}
+
+.nav-link.active {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--primary);
+}
+
+/* =====================================================
+   ANNOTATION WORKSPACE
+   ===================================================== */
+.annotation-workspace {
+  height: calc(100vh - 56px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-lowest);
+}
+
+/* =====================================================
+   UTILITY ANIMATIONS
+   ===================================================== */
+@keyframes fadeUpIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUpIn 0.5s ease forwards;
+}
+
+.delay-1 {
+  animation-delay: 0.08s;
+  opacity: 0;
+}
+
+.delay-2 {
+  animation-delay: 0.16s;
+  opacity: 0;
+}
+
+.delay-3 {
+  animation-delay: 0.24s;
+  opacity: 0;
+}
+
+.delay-4 {
+  animation-delay: 0.32s;
+  opacity: 0;
+}
