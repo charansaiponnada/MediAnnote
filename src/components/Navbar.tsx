@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { ConnectKitButton } from "connectkit";
 import {
     Activity, LayoutDashboard, ListTodo, User,
-    Upload, Shield, Menu, X,
+    Upload, Shield, Menu, X, Book,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -61,6 +61,11 @@ export function Navbar() {
                     }}>
                         MediAnnote
                     </span>
+                </Link>
+
+                <Link href="/docs" className="nav-link" style={{ textDecoration: "none", marginLeft: "-1rem" }}>
+                    <Book size={14} />
+                    Docs
                 </Link>
 
                 {/* Desktop nav links */}
