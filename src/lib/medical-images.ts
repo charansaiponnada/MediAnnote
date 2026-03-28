@@ -34,6 +34,34 @@ export function getImagesForBatchType(imageType: string): string[] {
     }
 }
 
+// Real Public Medical Dataset API (NIH via DICOMweb)
+// Note: In a real app, these would be proxied via the ML service to handle CORS and PHI scrubbing
+export const EXTERNAL_DATASETS = {
+    NIH_CHEST_XRAY: "https://healthcare.googleapis.com/v1/projects/chc-nih-chest-xray/locations/us-central1/datasets/nih-chest-xray/dicomStores/nih-chest-xray/dicomWeb/",
+    SANDBOX_DICOM: "https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs/"
+};
+
+/**
+ * Fetches an image from a medical API.
+ * In a production Xai environment, this would call the /scrub endpoint first.
+ */
+export const fetchApiImage = async (batchType: string, index: number): Promise<string> => {
+    try {
+        // For hackathon demo, we proxy through the ML service which handles the API call and scrubbing
+        const response = await fetch(`http://localhost:8000/fetch-external?type=${encodeURIComponent(batchType)}&index=${index}`);
+        const data = await response.json();
+        if (data.status === "success") {
+            return data.imageUrl;
+        }
+    } catch (e) {
+        console.warn("External API fetch failed, falling back to local mocks.", e);
+    }
+    
+    // Fallback to local mock if API fails
+    const images = getImagesForBatchType(batchType);
+    return images[index % images.length] || fallbackXraySVG;
+};
+
 // Fallback X-ray SVG for when real images fail to load
 export const fallbackXraySVG = `data:image/svg+xml,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">

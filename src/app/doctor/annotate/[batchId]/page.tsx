@@ -9,7 +9,7 @@ import {
 import Link from "next/link";
 import { useAppStore } from "@/lib/store";
 import { type Annotation } from "@/lib/mock-data";
-import { getImagesForBatchType, fallbackXraySVG } from "@/lib/medical-images";
+import { getImagesForBatchType, fallbackXraySVG, fetchApiImage } from "@/lib/medical-images";
 import { hashAnnotation } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -74,6 +74,7 @@ export default function AnnotateWorkspace({
     const [lastAiInsightHash, setLastAiInsightHash] = useState<string | null>(null);
     const [submittedHashes, setSubmittedHashes] = useState<string[]>([]);
     const [loadedImage, setLoadedImage] = useState<HTMLImageElement | null>(null);
+    const [useApiData, setUseApiData] = useState(false);
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -173,6 +174,8 @@ export default function AnnotateWorkspace({
                     imgUrl = URL.createObjectURL(file as Blob);
                     activeUrl = imgUrl;
                 }
+            } else if (useApiData) {
+                imgUrl = await fetchApiImage(batch.imageType, currentImage);
             } else {
                 imgUrl = batchImages[currentImage % batchImages.length] || fallbackXraySVG;
             }
@@ -195,7 +198,7 @@ export default function AnnotateWorkspace({
                 URL.revokeObjectURL(activeUrl);
             }
         };
-    }, [currentImage, batchImages, batch.uploadedImageKeys]);
+    }, [currentImage, batchImages, batch.uploadedImageKeys, useApiData, batch.imageType]);
 
     // Draw canvas
     const drawCanvas = useCallback(() => {
@@ -604,6 +607,24 @@ export default function AnnotateWorkspace({
                     <span className="label-sm" style={{ color: "var(--primary-fixed)", minWidth: 36 }}>
                         {Math.round(zoom * 100)}%
                     </span>
+
+                    <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.06)", margin: "0 0.5rem" }} />
+                    <button onClick={() => setUseApiData(!useApiData)}
+                        style={{
+                            display: "flex", alignItems: "center", gap: "0.375rem",
+                            padding: "0.375rem 0.75rem",
+                            borderRadius: "0.25rem",
+                            background: useApiData ? "rgba(6, 182, 212, 0.1)" : "var(--surface-high)",
+                            color: useApiData ? "var(--accent-cyan)" : "var(--primary-fixed)",
+                            fontSize: "0.65rem", fontWeight: 700,
+                            letterSpacing: "0.04em", textTransform: "uppercase" as const,
+                            border: useApiData ? "1px solid rgba(6, 182, 212, 0.3)" : "1px solid transparent",
+                            cursor: "pointer", transition: "all 0.15s",
+                        }}
+                    >
+                        <Hash size={11} />
+                        {useApiData ? "Live API: ON" : "Live API: OFF"}
+                    </button>
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>

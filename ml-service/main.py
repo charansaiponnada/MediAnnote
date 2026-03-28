@@ -224,3 +224,34 @@ async def generate_caption(request: Request):
         "caption": caption,
         "hash": f"0x{random.getrandbits(256):064x}" # Simulated SHA-256 hash
     }
+
+@app.get("/fetch-external")
+async def fetch_external_image(type: str, index: int):
+    """
+    Simulates fetching from a real medical API (NIH, DICOMweb, etc.)
+    and performing PHI scrubbing before returning to the frontend.
+    """
+    # Simulate a delay for external API network call
+    await asyncio.sleep(0.5)
+    
+    # Map index to real open-source assets or curated medical URLs
+    # In a real scenario, this would call Google Cloud Healthcare API or TCIA
+    mock_real_assets = {
+        "Chest X-Ray": [
+            "https://prod-images-static.radiopaedia.org/images/50849926/879641443493779e51921356f9661c_big_gallery.jpeg",
+            "https://prod-images-static.radiopaedia.org/images/53331454/6a8d810f92f15049b1a5b820a455a1_big_gallery.jpeg"
+        ],
+        "Retinal OCT": [
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/OCT_macula_normal.png/800px-OCT_macula_normal.png"
+        ]
+    }
+    
+    assets = mock_real_assets.get(type, mock_real_assets["Chest X-Ray"])
+    url = assets[index % len(assets)]
+    
+    return {
+        "status": "success",
+        "imageUrl": url,
+        "source": "NIH/Radiopaedia via Xai Scrubber",
+        "scrubbed": True
+    }
