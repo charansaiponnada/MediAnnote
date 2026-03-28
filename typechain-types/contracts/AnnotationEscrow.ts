@@ -36,7 +36,7 @@ export interface AnnotationEscrowInterface extends Interface {
       | "paymentToken"
       | "platformFeeBps"
       | "recordAnnotation"
-      | "releasePayment"
+      | "releasePaymentWithSplits"
       | "renounceOwnership"
       | "transferOwnership"
       | "treasury"
@@ -85,8 +85,8 @@ export interface AnnotationEscrowInterface extends Interface {
     values: [BytesLike, BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "releasePayment",
-    values: [BytesLike, AddressLike[]]
+    functionFragment: "releasePaymentWithSplits",
+    values: [BytesLike, AddressLike[], BigNumberish[]]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -130,7 +130,7 @@ export interface AnnotationEscrowInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "releasePayment",
+    functionFragment: "releasePaymentWithSplits",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -329,8 +329,8 @@ export interface AnnotationEscrow extends BaseContract {
     "nonpayable"
   >;
 
-  releasePayment: TypedContractMethod<
-    [batchId: BytesLike, annotators: AddressLike[]],
+  releasePaymentWithSplits: TypedContractMethod<
+    [batchId: BytesLike, annotators: AddressLike[], splitBps: BigNumberish[]],
     [void],
     "nonpayable"
   >;
@@ -403,9 +403,9 @@ export interface AnnotationEscrow extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "releasePayment"
+    nameOrSignature: "releasePaymentWithSplits"
   ): TypedContractMethod<
-    [batchId: BytesLike, annotators: AddressLike[]],
+    [batchId: BytesLike, annotators: AddressLike[], splitBps: BigNumberish[]],
     [void],
     "nonpayable"
   >;

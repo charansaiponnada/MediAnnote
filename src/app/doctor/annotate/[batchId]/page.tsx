@@ -4,7 +4,7 @@ import { use, useState, useRef, useCallback, useEffect } from "react";
 import {
     MousePointer2, Square, Pentagon, Pencil, MapPin, Eraser,
     ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Send, Trash2,
-    Loader2, Hash, FileText, Tag,
+    Loader2, Hash, FileText, Tag, Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { useAppStore } from "@/lib/store";
@@ -69,11 +69,94 @@ export default function AnnotateWorkspace({
     const [notes, setNotes] = useState("");
     const [zoom, setZoom] = useState(1);
     const [submitting, setSubmitting] = useState(false);
+    const [isPredicting, setIsPredicting] = useState(false);
+    const [isCaptioning, setIsCaptioning] = useState(false);
+    const [lastAiInsightHash, setLastAiInsightHash] = useState<string | null>(null);
     const [submittedHashes, setSubmittedHashes] = useState<string[]>([]);
     const [loadedImage, setLoadedImage] = useState<HTMLImageElement | null>(null);
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    const handleAiDraft = async () => {
+        if (!loadedImage || !canvasRef.current) return;
+        setIsPredicting(true);
+
+        try {
+            const imageId = `img-${currentImage}`;
+            const response = await fetch("http://localhost:8000/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ imageIds: [imageId] }),
+            });
+
+            const data = await response.json();
+            if (data.status === "success" && data.predictions[imageId]) {
+                const aiBoxes = data.predictions[imageId];
+
+                const canvas = canvasRef.current;
+                const cw = canvas.width / zoom;
+                const ch = canvas.height / zoom;
+                const iw = loadedImage.naturalWidth;
+                const ih = loadedImage.naturalHeight;
+                const scale = Math.min(cw / iw, ch / ih) * 0.92;
+                const dx = (cw - iw * scale) / 2;
+                const dy = (ch - ih * scale) / 2;
+
+                const newAnns: Annotation[] = aiBoxes.map((p: { id: string; label: string; box: number[]; confidence: number }) => ({
+                    id: `ai-${Date.now()}-${p.id}`,
+                    imageIndex: currentImage,
+                    label: batch.labels.includes(p.label) ? p.label : (batch.labels[0] || "Anomaly"),
+                    x: dx + p.box[0] * (iw * scale),
+                    y: dy + p.box[1] * (ih * scale),
+                    width: p.box[2] * (iw * scale),
+                    height: p.box[3] * (ih * scale),
+                    confidence: "medium",
+                    notes: `AI Smart Draft (Confidence: ${Math.round(p.confidence * 100)}%)`,
+                }));
+
+                setAnnotations((prev) => [...prev, ...newAnns]);
+                toast.success(`AI drafted ${newAnns.length} annotations`, { icon: "✨" });
+            }
+        } catch (error) {
+            console.error("AI Draft error:", error);
+            toast.error("ML Service unreachable. Ensure 'run-ml.bat' is active.", { duration: 4000 });
+        } finally {
+            setIsPredicting(false);
+        }
+    };
+
+    const handleAiCaption = async () => {
+        const imageAnns = annotations.filter(a => a.imageIndex === currentImage);
+        if (imageAnns.length === 0) {
+            toast.error("Please draw or draft some annotations first.");
+            return;
+        }
+
+        setIsCaptioning(true);
+        try {
+            const response = await fetch("http://localhost:8000/caption", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    labels: imageAnns.map(a => a.label),
+                    confidence: 0.88
+                }),
+            });
+
+            const data = await response.json();
+            if (data.status === "success") {
+                setNotes(data.caption);
+                setLastAiInsightHash(data.hash);
+                toast.success("AI clinical caption generated", { icon: "📝" });
+            }
+        } catch (error) {
+            console.error("AI Caption error:", error);
+            toast.error("ML Service unreachable.");
+        } finally {
+            setIsCaptioning(false);
+        }
+    };
 
     // Load real medical image
     useEffect(() => {
@@ -382,11 +465,25 @@ export default function AnnotateWorkspace({
                 const rawBatchId = batch.batchId || batch.id;
                 const bytes32BatchId = isHex(rawBatchId) ? pad(rawBatchId as `0x${string}`, { size: 32 }) : pad(stringToHex(rawBatchId), { size: 32 });
                 const bytes32Hash = `0x${hash}` as `0x${string}`; // SHA-256 is 32 bytes
+                
+                // Record the primary annotation hash
                 await writeContractAsync({
                     ...CONTRACTS.AnnotationEscrow,
                     functionName: "recordAnnotation",
                     args: [bytes32BatchId, bytes32Hash],
                 });
+
+                // IF AI caption was used, record the AI insight hash for provenance
+                if (lastAiInsightHash) {
+                    toast.loading("Recording AI Assistance Audit Trail…", { id: "aiInsightTx" });
+                    await writeContractAsync({
+                        ...CONTRACTS.AnnotationEscrow,
+                        functionName: "recordAiInsight",
+                        args: [bytes32BatchId, lastAiInsightHash as `0x${string}`],
+                    });
+                    toast.dismiss("aiInsightTx");
+                }
+
                 await new Promise((r) => setTimeout(r, 2000));
                 toast.dismiss("recordTx");
             } catch (error) {
@@ -474,6 +571,27 @@ export default function AnnotateWorkspace({
                             </button>
                         );
                     })}
+                    <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.06)", margin: "0 0.5rem" }} />
+                    
+                    <button onClick={handleAiDraft} disabled={isPredicting || !loadedImage}
+                        title="Generate AI-Assisted Draft"
+                        style={{
+                            display: "flex", alignItems: "center", gap: "0.375rem",
+                            padding: "0.375rem 0.75rem",
+                            borderRadius: "0.25rem",
+                            background: isPredicting ? "var(--surface-high)" : "rgba(34, 197, 94, 0.1)",
+                            color: "var(--accent-emerald)",
+                            fontSize: "0.7rem", fontWeight: 700,
+                            letterSpacing: "0.04em", textTransform: "uppercase" as const,
+                            border: "1px solid rgba(34, 197, 94, 0.2)", cursor: "pointer",
+                            transition: "all 0.15s",
+                            opacity: (!loadedImage) ? 0.5 : 1,
+                        }}
+                    >
+                        {isPredicting ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                        Xai Draft
+                    </button>
+
                     <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.06)", margin: "0 0.5rem" }} />
                     <button onClick={() => setZoom((z) => Math.min(3, z + 0.2))} title="Zoom In"
                         style={{ background: "none", border: "none", cursor: "pointer", color: "var(--primary-fixed)", padding: "0.375rem" }}>
@@ -628,7 +746,21 @@ export default function AnnotateWorkspace({
                                 );
                             })}
                         </div>
-                        <div className="label-sm" style={{ color: "var(--primary-fixed)", marginBottom: "0.5rem" }}>Clinical Notes (Mandatory)</div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                            <div className="label-sm" style={{ color: "var(--primary-fixed)" }}>Clinical Notes (Mandatory)</div>
+                            <button onClick={handleAiCaption} disabled={isCaptioning || currentAnnotations.length === 0}
+                                style={{
+                                    display: "flex", alignItems: "center", gap: "0.25rem",
+                                    padding: "0.125rem 0.5rem", borderRadius: "0.25rem",
+                                    background: "rgba(34, 197, 94, 0.1)", color: "var(--accent-emerald)",
+                                    fontSize: "0.6rem", fontWeight: 700, border: "1px solid rgba(34, 197, 94, 0.2)",
+                                    cursor: "pointer", transition: "all 0.15s",
+                                    opacity: currentAnnotations.length === 0 ? 0.5 : 1
+                                }}>
+                                {isCaptioning ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                                Xai Caption
+                            </button>
+                        </div>
                         <textarea value={notes} onChange={(e) => setNotes(e.target.value)}
                             placeholder="Required: Document your clinical observations here…"
                             rows={2}

@@ -153,7 +153,7 @@ function appReducer(state: AppState, action: Action): AppState {
                     ...state.annotations,
                     [action.batchId]: [
                         ...(state.annotations[action.batchId] || []),
-                        action.annotation,
+                        { ...action.annotation, doctorId: action.doctorId },
                     ],
                 },
                 doctors: state.doctors.map((d) =>

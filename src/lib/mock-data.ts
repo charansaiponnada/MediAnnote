@@ -52,6 +52,7 @@ export interface Annotation {
     height: number;
     confidence: "low" | "medium" | "high";
     notes?: string;
+    doctorId?: string;
 }
 
 export const mockDoctors: Doctor[] = [

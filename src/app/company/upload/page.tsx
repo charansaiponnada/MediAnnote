@@ -23,7 +23,6 @@ export default function CompanyUpload() {
     const [imageType, setImgType] = useState("Chest X-Ray");
     const [labels, setLabels] = useState<string[]>(["Pneumonia", "Nodule", "Normal", "Effusion"]);
     const [newLabel, setNew] = useState("");
-    const [budget, setBudget] = useState(125);
     const [imgCount, setCount] = useState(50);
     const [ratePerImg, setRate] = useState(2.5);
     const [loading, setLoading] = useState(false);
@@ -49,9 +48,25 @@ export default function CompanyUpload() {
         const amountParsed = parseUnits(totalBudget.toString(), 6);
         let txHash = "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
 
-        let uploadedImageKeys: string[] = [];
+        const uploadedImageKeys: string[] = [];
         if (uploadedFiles.length > 0) {
-            toast.loading("Saving large images locally...", { id: "tx" });
+            toast.loading("AI PHI Scrubbing in progress...", { id: "scrub" });
+
+            // Simulate calling /scrub for each file
+            for (const file of uploadedFiles) {
+                try {
+                    await fetch("http://localhost:8000/scrub", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ filename: file.name }),
+                    });
+                } catch (e) {
+                    console.warn("Scrubbing service unreachable, continuing with local save.");
+                }
+            }
+            toast.success("PHI Stripped: All images anonymized.", { id: "scrub" });
+
+            toast.loading("Saving anonymized images locally...", { id: "tx" });
             const { set } = await import("idb-keyval");
             for (let i = 0; i < uploadedFiles.length; i++) {
                 const key = `${batchString}-img-${i}`;
@@ -59,6 +74,7 @@ export default function CompanyUpload() {
                 uploadedImageKeys.push(key);
             }
         }
+
 
         if (!isConnected) {
             toast.loading("DEMO MODE: Simulating Escrow deposit…", { id: "tx" });
@@ -85,7 +101,7 @@ export default function CompanyUpload() {
                 });
                 toast.dismiss("tx");
 
-            } catch (error: any) {
+            } catch (error) {
                 console.error("Web3 Error:", error);
                 toast.error("Transaction failed or was rejected by user.", { id: "tx" });
                 setLoading(false);

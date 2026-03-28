@@ -3,10 +3,13 @@
 import { use, useState, useEffect } from "react";
 import { CheckCircle, ExternalLink, Download, BarChart3, Image as ImageIcon, Clock, FileText, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
-import { formatUSDCRaw, truncateAddress } from "@/lib/utils";
+import { formatUSDCRaw, truncateAddress, hashAnnotation } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
 import { getImagesForBatchType } from "@/lib/medical-images";
 import toast from "react-hot-toast";
+import { useWriteContract, useAccount } from "wagmi";
+import { pad, stringToHex, isHex } from "viem";
+import { CONTRACTS } from "@/lib/contracts";
 
 const labelColors: Record<string, string> = {
     Pneumonia: "#ef4444", Nodule: "#f59e0b", Normal: "#22c55e",
@@ -19,7 +22,10 @@ const labelColors: Record<string, string> = {
 export default function DatasetDetail({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const { state } = useAppStore();
+    const { writeContractAsync } = useWriteContract();
+    const { isConnected } = useAccount();
     const [galleryOpen, setGalleryOpen] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
 
     const batch = state.batches.find((b) => b.id === id);
     const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
@@ -65,7 +71,8 @@ export default function DatasetDetail({ params }: { params: Promise<{ id: string
     const imageCount = Math.min(batch.totalImages, 12);
     const batchAnnotations = state.annotations[batch.id] || [];
 
-    const handleExportCOCO = () => {
+    const handleExportCOCO = async () => {
+        setIsExporting(true);
         const categories = batch.labels.map((lbl, i) => ({ id: i + 1, name: lbl }));
         const categoryMap = Object.fromEntries(categories.map(c => [c.name, c.id]));
 
@@ -99,6 +106,35 @@ export default function DatasetDetail({ params }: { params: Promise<{ id: string
             categories: categories
         };
 
+        // 1. Calculate Hash of the final COCO JSON
+        const hash = await hashAnnotation(cocoData);
+
+        // 2. Commit Hash to Blockchain for Immutability Proof
+        if (!isConnected) {
+            toast.loading("DEMO MODE: Simulating On-chain Data Audit Trail…", { id: "auditTx" });
+            await new Promise((r) => setTimeout(r, 2000));
+            toast.dismiss("auditTx");
+        } else {
+            try {
+                toast.loading("Committing Dataset Hash to Polygon…", { id: "auditTx" });
+                const rawBatchId = batch.batchId || batch.id;
+                const bytes32BatchId = isHex(rawBatchId) ? pad(rawBatchId as `0x${string}`, { size: 32 }) : pad(stringToHex(rawBatchId), { size: 32 });
+                const bytes32Hash = `0x${hash}` as `0x${string}`;
+                
+                await writeContractAsync({
+                    ...CONTRACTS.AnnotationEscrow,
+                    functionName: "recordAnnotation",
+                    args: [bytes32BatchId, bytes32Hash],
+                });
+                toast.dismiss("auditTx");
+            } catch (error) {
+                console.error("Audit log failed:", error);
+                toast.error("Failed to commit audit trail to blockchain.");
+                setIsExporting(false);
+                return;
+            }
+        }
+
         const blob = new Blob([JSON.stringify(cocoData, null, 2)], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -108,7 +144,9 @@ export default function DatasetDetail({ params }: { params: Promise<{ id: string
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        toast.success("Dataset Exported to COCO JSON format!");
+        
+        toast.success(`Dataset Exported!\nAudit Hash committed: ${hash.slice(0, 18)}…`);
+        setIsExporting(false);
     };
 
     return (

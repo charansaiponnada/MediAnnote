@@ -25,6 +25,7 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
 
     mapping(bytes32 => Batch) public batches;
     mapping(bytes32 => bytes32[]) public annotationHashes; // batchId => array of hashes
+    mapping(bytes32 => bytes32[]) public aiInsightHashes; // batchId => array of AI-generated caption hashes
 
     event FundsDeposited(
         bytes32 indexed batchId,
@@ -45,6 +46,12 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
         bytes32 indexed batchId,
         address indexed annotator,
         bytes32 annotationHash,
+        uint256 timestamp
+    );
+
+    event AiInsightRecorded(
+        bytes32 indexed batchId,
+        bytes32 insightHash,
         uint256 timestamp
     );
 
@@ -86,16 +93,28 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice Release payment for a batch — splits funds equally to annotators minus 10% platform fee
+     * @notice Release payment for a batch — splits funds dynamically based on consensus scores
      * @param batchId Batch to release
      * @param annotators Final list of annotators to distribute funds to
+     * @param splitBps Array of percentages (in basis points) corresponding to each annotator (must sum to 10000)
      */
-    function releasePayment(bytes32 batchId, address[] calldata annotators) external nonReentrant {
+    function releasePaymentWithSplits(
+        bytes32 batchId, 
+        address[] calldata annotators,
+        uint256[] calldata splitBps
+    ) external nonReentrant {
         Batch storage batch = batches[batchId];
         require(batch.exists, "Batch does not exist");
         require(msg.sender == batch.company, "Only the company that deposited can release funds");
         require(!batch.released, "Already released");
         require(annotators.length > 0, "Need at least one annotator");
+        require(annotators.length == splitBps.length, "Arrays length mismatch");
+
+        uint256 totalBps = 0;
+        for (uint256 i = 0; i < splitBps.length; i++) {
+            totalBps += splitBps[i];
+        }
+        require(totalBps == 10000, "Splits must sum to 10000 (100%)");
 
         batch.released = true;
         batch.annotators = annotators;
@@ -103,7 +122,6 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
         uint256 totalAmount = batch.totalAmount;
         uint256 fee = (totalAmount * platformFeeBps) / 10000;
         uint256 distributable = totalAmount - fee;
-        uint256 perAnnotator = distributable / annotators.length;
 
         // Send platform fee to treasury
         require(
@@ -111,15 +129,18 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
             "Fee transfer failed"
         );
 
-        // Distribute to each annotator
+        // Distribute to each annotator based on consensus contribution
         for (uint256 i = 0; i < batch.annotators.length; i++) {
-            require(
-                paymentToken.transfer(batch.annotators[i], perAnnotator),
-                "Annotator transfer failed"
-            );
+            uint256 payout = (distributable * splitBps[i]) / 10000;
+            if (payout > 0) {
+                require(
+                    paymentToken.transfer(batch.annotators[i], payout),
+                    "Annotator transfer failed"
+                );
+            }
         }
 
-        emit FundsReleased(batchId, perAnnotator, fee, block.timestamp);
+        emit FundsReleased(batchId, 0, fee, block.timestamp);
     }
 
     /**
@@ -137,6 +158,19 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
         emit AnnotationRecorded(batchId, msg.sender, annotationHash, block.timestamp);
     }
 
+    /**
+     * @notice Record an AI-generated insight hash for auditability
+     */
+    function recordAiInsight(
+        bytes32 batchId,
+        bytes32 insightHash
+    ) external {
+        require(batches[batchId].exists, "Batch does not exist");
+        aiInsightHashes[batchId].push(insightHash);
+
+        emit AiInsightRecorded(batchId, insightHash, block.timestamp);
+    }
+
     // View helpers
     function getBatchAnnotators(bytes32 batchId) external view returns (address[] memory) {
         return batches[batchId].annotators;
@@ -144,6 +178,10 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
 
     function getAnnotationHashes(bytes32 batchId) external view returns (bytes32[] memory) {
         return annotationHashes[batchId];
+    }
+
+    function getAiInsightHashes(bytes32 batchId) external view returns (bytes32[] memory) {
+        return aiInsightHashes[batchId];
     }
 
     function isBatchFunded(bytes32 batchId) external view returns (bool) {
