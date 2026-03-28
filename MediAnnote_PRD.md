@@ -360,7 +360,7 @@ Liquidity Pool                   5%  ██
 
 | Component | Technology |
 |---|---|
-| Framework | React 18 + TypeScript |
+| Framework | Next.js (16) + TypeScript |
 | State Management | Zustand |
 | UI Library | Shadcn/UI + TailwindCSS |
 | Medical Image Viewer | Cornerstone.js (DICOM rendering) |
