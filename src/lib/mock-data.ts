@@ -139,9 +139,9 @@ export const mockBatches: AnnotationBatch[] = [
     {
         id: "batch-1",
         batchId: "0x" + "a1b2c3d4".repeat(8),
-        title: "Chest X-Ray Pneumonia Detection",
+        title: "Large-Scale Chest X-Ray Analysis (NIH)",
         description:
-            "Annotate lung regions in chest X-rays for pneumonia detection model training. Mark areas of consolidation, ground-glass opacity, and pleural effusion.",
+            "Annotate findings across 14 clinical categories from the NIH ChestX-ray14 dataset. Focus on Atelectasis, Cardiomegaly, and Effusion.",
         imageType: "Chest X-Ray",
         totalImages: 50,
         annotatedImages: 32,
@@ -151,7 +151,7 @@ export const mockBatches: AnnotationBatch[] = [
         status: "in_progress",
         companyId: "comp-1",
         companyName: "LungAI Diagnostics",
-        labels: ["Pneumonia", "Nodule", "Normal", "Effusion", "Consolidation"],
+        labels: ["Atelectasis", "Cardiomegaly", "Effusion", "Infiltration", "Mass", "Nodule", "Pneumonia", "Pneumothorax", "Consolidation", "Edema", "Emphysema", "Fibrosis", "Pleural_Thickening", "Hernia"],
         iaaScore: 0.87,
         txHash: "0x8f4e5d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e",
         assignedDoctors: ["doc-1", "doc-2"],
