@@ -48,8 +48,9 @@ export const EXTERNAL_DATASETS = {
  */
 export const fetchApiImage = async (batchType: string, index: number): Promise<string> => {
     try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
         // For hackathon demo, we proxy through the ML service which handles the API call and scrubbing
-        const response = await fetch(`http://localhost:8000/fetch-external?type=${encodeURIComponent(batchType)}&index=${index}`);
+        const response = await fetch(`${API_URL}/fetch-external?type=${encodeURIComponent(batchType)}&index=${index}`);
         const data = await response.json();
         if (data.status === "success") {
             return data.imageUrl;

@@ -46,6 +46,7 @@ export default function AuditPage({
     const handleRunConsensus = async () => {
         setIsCalculating(true);
         try {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
             const batchAnnotations = state.annotations[batch.id] || [];
 
             // Group annotations by doctor wallet for the ML service
@@ -54,7 +55,7 @@ export default function AuditPage({
                 submissions[doc.wallet] = batchAnnotations.filter(a => a.doctorId === doc.id);
             });
 
-            const response = await fetch("http://localhost:8000/consensus", {
+            const response = await fetch(`${API_URL}/consensus`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ submissions }),

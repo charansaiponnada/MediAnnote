@@ -306,3 +306,9 @@ async def fetch_external_image(type: str, index: int):
         "scrubbed": True,
         "dataset_url": "https://www.kaggle.com/datasets/nih-chest-xrays/data"
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    import os
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

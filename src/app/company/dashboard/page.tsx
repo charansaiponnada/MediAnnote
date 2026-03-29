@@ -377,7 +377,7 @@ export default function CompanyDashboard() {
                             </div>
                         </div>
                         <div style={{ padding: "1.5rem", height: 400, overflowY: "auto", fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace", fontSize: "0.85rem", color: "#A3A3A3", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                            {terminalLogs.length === 0 && <span className="animate-pulse">Waiting for connection to Python ML Service (http://localhost:8000)...</span>}
+                            {terminalLogs.length === 0 && <span className="animate-pulse">Connecting to Xai ML Service...</span>}
                             {terminalLogs.map((log, i) => (
                                 <div key={i} style={{ color: log.includes("Epoch") ? "var(--on-surface)" : (log.includes("[INFO]") ? "var(--accent-cyan)" : "#A3A3A3") }}>
                                     <span style={{ color: "#555" }}>{new Date().toISOString().split("T")[1].slice(0, 12)}</span> &nbsp; {log}
@@ -505,6 +505,13 @@ export default function CompanyDashboard() {
                                 </div>
                             )}
                         </div>
+                    </div>
+                );
+            })()}
+        </div>
+    );
+}
+             </div>
                     </div>
                 );
             })()}

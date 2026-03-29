@@ -51,11 +51,12 @@ export default function CompanyUpload() {
         const uploadedImageKeys: string[] = [];
         if (uploadedFiles.length > 0) {
             toast.loading("AI PHI Scrubbing in progress...", { id: "scrub" });
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
             // Simulate calling /scrub for each file
             for (const file of uploadedFiles) {
                 try {
-                    await fetch("http://localhost:8000/scrub", {
+                    await fetch(`${API_URL}/scrub`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ filename: file.name }),
