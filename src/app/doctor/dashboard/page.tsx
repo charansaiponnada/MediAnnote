@@ -77,8 +77,8 @@ export default function DoctorDashboard() {
     ];
 
     return (
-        <div style={{ background: "var(--surface)", minHeight: "100svh" }}>
-            <div style={{ maxWidth: 1200, margin: "0 auto", padding: "2.5rem 1.5rem" }}>
+        <div style={{ background: "#000", minHeight: "100svh" }}>
+            <div style={{ maxWidth: 1200, margin: "0 auto", padding: "6rem 1.5rem 2.5rem 1.5rem" }}>
 
                 {/* Header */}
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "2.5rem", gap: "1rem" }}>

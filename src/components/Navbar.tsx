@@ -7,6 +7,15 @@ import {
     Activity, LayoutDashboard, ListTodo, User,
     Upload, Shield, Menu, X, Book,
 } from "lucide-react";
+import {
+    Sun,
+    CaretDown,
+    Lightning,
+    BookOpen,
+    PresentationChart,
+    Users,
+    HouseLine
+} from "@phosphor-icons/react";
 import { useState } from "react";
 
 const doctorLinks = [
@@ -21,6 +30,7 @@ const companyLinks = [
 
 export function Navbar() {
     const pathname = usePathname();
+    const isLanding = pathname === "/";
     const [open, setOpen] = useState(false);
 
     if (pathname.includes("/annotate/")) return null;
@@ -31,105 +41,97 @@ export function Navbar() {
     const links = isDoctor ? doctorLinks : isCompany ? companyLinks : [];
 
     return (
-        <nav className="nav-root" style={{ height: 56 }}>
-            <div style={{
-                maxWidth: 1280,
-                margin: "0 auto",
-                padding: "0 1.5rem",
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "2rem",
-            }}>
-                {/* Logo */}
-                <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.625rem", textDecoration: "none" }}>
-                    <div style={{
-                        width: 32, height: 32,
-                        background: "linear-gradient(135deg, #FFFFFF 0%, #D4D4D4 100%)",
-                        borderRadius: "0.375rem",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                        <Activity size={17} color="#1A1C1C" strokeWidth={2.5} />
-                    </div>
-                    <span style={{
-                        fontFamily: "'Manrope', sans-serif",
-                        fontWeight: 800,
-                        fontSize: "0.9375rem",
-                        color: "var(--primary)",
-                        letterSpacing: "-0.01em",
-                    }}>
-                        MediAnnote
-                    </span>
-                </Link>
+        <nav
+            className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isLanding ? "bg-transparent h-20" : "bg-[#0b0b0b]/80 backdrop-blur-xl h-16 border-b border-white/5"
+                }`}
+        >
+            <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
+                {/* Left Section: Logo */}
+                <div className="flex items-center gap-8">
+                    <Link href="/" className="flex items-center gap-2 group transition-all text-white no-underline">
+                        <div className="w-8 h-8 flex items-center justify-center bg-white/5 rounded-lg border border-white/10">
+                            <Sun size={20} weight="bold" color="white" />
+                        </div>
+                        <span className="font-instrument-sans font-bold text-xl tracking-tight">
+                            MediAnnote
+                        </span>
+                    </Link>
 
-                <Link href="/docs" className="nav-link" style={{ textDecoration: "none", marginLeft: "-1rem" }}>
-                    <Book size={14} />
-                    Docs
-                </Link>
-
-                {/* Desktop nav links */}
-                <div style={{ display: "flex", alignItems: "center", gap: "0.25rem", flex: 1 }}>
-                    {links.map(({ href, label, icon: Icon }) => (
-                        <Link
-                            key={href}
-                            href={href}
-                            className={`nav-link${pathname === href ? " active" : ""}`}
-                            style={{ textDecoration: "none" }}
-                        >
-                            <Icon size={14} />
-                            {label}
-                        </Link>
-                    ))}
-                    {isAdmin && (
-                        <Link href="/admin" className="nav-link active" style={{ textDecoration: "none" }}>
-                            <Shield size={14} />
-                            Admin
-                        </Link>
-                    )}
-                </div>
-
-                {/* Right side */}
-                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                    {/* Role switcher */}
-                    {pathname !== "/" && !pathname.startsWith("/login") && (
-                        <div style={{
-                            display: "flex",
-                            alignItems: "center",
-                            background: "var(--surface-lowest)",
-                            borderRadius: "0.375rem",
-                            padding: "0.25rem",
-                            gap: "0.125rem",
-                        }}>
-                            {[
-                                { label: "Doctor", href: "/doctor/dashboard", active: isDoctor },
-                                { label: "Company", href: "/company/dashboard", active: isCompany },
-                                { label: "Admin", href: "/admin", active: isAdmin },
-                            ].map(({ label, href, active }) => (
-                                <Link
-                                    key={href}
-                                    href={href}
-                                    style={{
-                                        textDecoration: "none",
-                                        padding: "0.25rem 0.625rem",
-                                        borderRadius: "0.25rem",
-                                        fontSize: "0.6875rem",
-                                        fontWeight: 700,
-                                        letterSpacing: "0.05em",
-                                        textTransform: "uppercase",
-                                        color: active ? "var(--primary)" : "var(--primary-fixed)",
-                                        background: active ? "rgba(255,255,255,0.08)" : "transparent",
-                                        transition: "all 0.15s",
-                                    }}
-                                >
-                                    {label}
-                                </Link>
-                            ))}
+                    {/* Center Section (Landing Page specific) */}
+                    {isLanding && (
+                        <div className="hidden md:flex items-center gap-8">
+                            <Link href="/products" className="font-instrument-sans text-sm font-medium text-white/80 hover:text-white transition-colors flex items-center gap-1 no-underline">
+                                Products <CaretDown size={14} />
+                            </Link>
+                            <Link href="/stories" className="font-instrument-sans text-sm font-medium text-white/80 hover:text-white transition-colors no-underline">
+                                Customer Stories
+                            </Link>
+                            <Link href="/docs" className="font-instrument-sans text-sm font-medium text-white/80 hover:text-white transition-colors no-underline">
+                                Resources
+                            </Link>
+                            <Link href="/pricing" className="font-instrument-sans text-sm font-medium text-white/80 hover:text-white transition-colors no-underline">
+                                Pricing
+                            </Link>
                         </div>
                     )}
 
-                    {(isDoctor || isCompany || isAdmin) && (
-                        <ConnectKitButton />
+                    {/* Dashboard Links */}
+                    {!isLanding && (
+                        <div className="hidden md:flex items-center gap-1">
+                            {links.map(({ href, label, icon: Icon }) => (
+                                <Link
+                                    key={href}
+                                    href={href}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-all no-underline ${pathname === href ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70"
+                                        }`}
+                                >
+                                    <Icon size={14} />
+                                    {label}
+                                </Link>
+                            ))}
+                            {isAdmin && (
+                                <Link href="/admin" className="px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 bg-white/10 text-white no-underline">
+                                    <Shield size={14} /> Admin
+                                </Link>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Right Section */}
+                <div className="flex items-center gap-4">
+                    {isLanding ? (
+                        <>
+                            <Link href="/demo" className="hidden sm:block font-instrument-sans text-sm font-medium text-white/80 hover:text-white transition-colors no-underline">
+                                Book A Demo
+                            </Link>
+                            <Link href="/doctor/dashboard" className="bg-white text-black text-sm px-5 py-2.5 rounded-full font-semibold hover:bg-white/90 transition-all no-underline">
+                                Get Started
+                            </Link>
+                        </>
+                    ) : (
+                        <div className="flex items-center gap-4">
+                            <Link href="/" className="p-2 rounded-full hover:bg-white/5 transition-colors text-white/50 hover:text-white no-underline">
+                                <HouseLine size={20} />
+                            </Link>
+                            <div className="flex items-center bg-white/[0.03] rounded-full p-1 border border-white/5 backdrop-blur-md">
+                                {[
+                                    { label: "Doctor", href: "/doctor/dashboard", active: isDoctor },
+                                    { label: "Company", href: "/company/dashboard", active: isCompany },
+                                    { label: "Admin", href: "/admin", active: isAdmin },
+                                ].map(({ label, href, active }) => (
+                                    <Link
+                                        key={href}
+                                        href={href}
+                                        className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.1em] uppercase transition-all no-underline ${active ? "bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)]" : "text-white/20 hover:text-white/40"
+                                            }`}
+                                    >
+                                        {label}
+                                    </Link>
+                                ))}
+                            </div>
+                            <ConnectKitButton />
+                        </div>
                     )}
                 </div>
             </div>

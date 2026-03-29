@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&display=swap');
 @import "tailwindcss";
 
 /* =====================================================
@@ -525,4 +526,81 @@
 .delay-4 {
   animation-delay: 0.32s;
   opacity: 0;
+}
+
+/* Inspiration Styles */
+.font-instrument-sans {
+  font-family: 'Instrument Sans', sans-serif;
+}
+
+.font-instrument-serif {
+  font-family: 'Instrument Serif', serif;
+}
+
+.text-gradient {
+  background: linear-gradient(to bottom, #ffffff 0%, #ffffff 60%, #b4c0ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-blur-overlay {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+}
+
+.gradient-top-left {
+  position: absolute;
+  top: -20%;
+  left: 20%;
+  width: 600px;
+  height: 600px;
+  background: rgba(30, 58, 138, 0.2);
+  filter: blur(120px);
+  border-radius: 50%;
+  mix-blend-mode: screen;
+}
+
+.gradient-bottom-right {
+  position: absolute;
+  bottom: -10%;
+  right: 20%;
+  width: 500px;
+  height: 500px;
+  background: rgba(49, 46, 129, 0.2);
+  filter: blur(120px);
+  border-radius: 50%;
+  mix-blend-mode: screen;
+}
+
+.hero-pill {
+  background: white;
+  border-radius: 9999px;
+  padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.hero-pill:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.arrow-circle {
+  width: 40px;
+  height: 40px;
+  background: #3054ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.hero-pill:hover .arrow-circle {
+  background: #2040e0;
 }

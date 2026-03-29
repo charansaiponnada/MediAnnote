@@ -23,7 +23,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body style={{ background: "var(--surface)", color: "var(--on-surface-variant)" }}>
+      <body style={{ background: "#000", color: "white" }}>
         <ThemeProvider>
           <Web3Provider>
             <AppStoreProvider>
