@@ -13,10 +13,10 @@ import { CONTRACTS } from "@/lib/contracts";
 import toast from "react-hot-toast";
 import { isHex, pad, stringToHex } from "viem";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const tierClass: Record<number, string> = { 0: "tier-bronze", 1: "tier-silver", 2: "tier-gold", 3: "tier-platinum" };
-const tierLabel: Record<number, string> = { 0: "Bronze", 1: "Silver", 2: "Gold", 3: "Platinum" };
+const tierClass: Record<number, string> = { 0: "tier-bronze", 1: "tier-silver", 2: "tier-gold", 3: "tier-platinum", 4: "tier-elite" };
+const tierLabel: Record<number, string> = { 0: "Bronze", 1: "Silver", 2: "Gold", 3: "Platinum", 4: "Elite" };
 
 const feedColor: Record<string, string> = {
     payment: "var(--accent-emerald)",
@@ -42,6 +42,22 @@ export default function DoctorDashboard() {
         (b) => b.assignedDoctors.includes(doctor.id) && b.status !== "completed" && b.status !== "paid"
     );
     const openBatches = state.batches.filter((b) => b.status === "open" || (b.status === "in_progress" && !b.assignedDoctors.includes(doctor.id)));
+
+    useEffect(() => {
+        if (isConnected && openBatches.length > 0) {
+            const timer = setTimeout(() => {
+                dispatch({
+                    type: "SHOW_NOTIFICATION",
+                    notification: {
+                        type: "job",
+                        title: "High-Value Task Match",
+                        message: `A new ${doctor.specialty} batch is available. Your ${tierLabel[doctor.tier]} status makes you eligible for a priority reward of $2.50 per image.`,
+                    }
+                });
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [isConnected, openBatches.length, doctor.specialty, doctor.tier, dispatch]);
 
     const handleMintSBT = async () => {
         setIsMinting(true);

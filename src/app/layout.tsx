@@ -3,6 +3,7 @@ import "./globals.css";
 import { Web3Provider } from "@/providers/Web3Provider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { Navbar } from "@/components/Navbar";
+import NotificationManager from "@/components/NotificationManager";
 import { Toaster } from "react-hot-toast";
 import { AppStoreProvider } from "@/lib/store";
 
@@ -28,6 +29,7 @@ export default function RootLayout({
           <Web3Provider>
             <AppStoreProvider>
               <Navbar />
+              <NotificationManager />
               <main style={{ minHeight: "100svh" }}>{children}</main>
               <Toaster
                 position="bottom-right"

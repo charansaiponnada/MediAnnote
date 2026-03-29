@@ -30,6 +30,8 @@ export type { IERC721Receiver } from "./@openzeppelin/contracts/token/ERC721/IER
 export { IERC721Receiver__factory } from "./factories/@openzeppelin/contracts/token/ERC721/IERC721Receiver__factory";
 export type { Base64 } from "./@openzeppelin/contracts/utils/Base64";
 export { Base64__factory } from "./factories/@openzeppelin/contracts/utils/Base64__factory";
+export type { MerkleProof } from "./@openzeppelin/contracts/utils/cryptography/MerkleProof";
+export { MerkleProof__factory } from "./factories/@openzeppelin/contracts/utils/cryptography/MerkleProof__factory";
 export type { ERC165 } from "./@openzeppelin/contracts/utils/introspection/ERC165";
 export { ERC165__factory } from "./factories/@openzeppelin/contracts/utils/introspection/ERC165__factory";
 export type { IERC165 } from "./@openzeppelin/contracts/utils/introspection/IERC165";

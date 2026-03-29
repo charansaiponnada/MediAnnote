@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\projects\\Hackathons\\MediAnnote\\contracts\\AnnotationEscrow.sol": {
-      "lastModificationDate": 1774743270897,
-      "contentHash": "62e74f7960ead70ceea858fda226e355",
+      "lastModificationDate": 1774799646896,
+      "contentHash": "766c2af1a25141996ad6a1acc3af1db6",
       "sourceName": "contracts/AnnotationEscrow.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -32,7 +32,8 @@
       "imports": [
         "@openzeppelin/contracts/token/ERC20/IERC20.sol",
         "@openzeppelin/contracts/access/Ownable.sol",
-        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+        "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol"
       ],
       "versionPragmas": [
         "^0.8.24"
@@ -878,8 +879,8 @@
       ]
     },
     "C:\\projects\\Hackathons\\MediAnnote\\contracts\\DoctorSBT.sol": {
-      "lastModificationDate": 1774655558500,
-      "contentHash": "f24dd1f4143049925ca237c99feb6909",
+      "lastModificationDate": 1774795971531,
+      "contentHash": "59b68b48d08cf989fb1a86e50e568ec3",
       "sourceName": "contracts/DoctorSBT.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -954,6 +955,80 @@
       ],
       "artifacts": [
         "MockUSDC"
+      ]
+    },
+    "C:\\projects\\Hackathons\\MediAnnote\\node_modules\\@openzeppelin\\contracts\\utils\\cryptography\\MerkleProof.sol": {
+      "lastModificationDate": 1774654775563,
+      "contentHash": "78e32aca3b084873cd053ef8a60d0e5d",
+      "sourceName": "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "evmVersion": "cancun",
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./Hashes.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "MerkleProof"
+      ]
+    },
+    "C:\\projects\\Hackathons\\MediAnnote\\node_modules\\@openzeppelin\\contracts\\utils\\cryptography\\Hashes.sol": {
+      "lastModificationDate": 1774654775395,
+      "contentHash": "073b9c3ce7bc358a876ed2b3479db88c",
+      "sourceName": "@openzeppelin/contracts/utils/cryptography/Hashes.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "evmVersion": "cancun",
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "Hashes"
       ]
     }
   }

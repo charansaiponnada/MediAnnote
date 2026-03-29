@@ -42,9 +42,19 @@ interface AppState {
     annotations: Record<string, Annotation[]>; // batchId→annotations
     models: MLModel[];
     escrowBalances: Record<string, number>; // batchId→locked USDC
+    userRole: "doctor" | "company" | "admin" | null;
+    activeNotification: {
+        type: "job" | "payout";
+        title: string;
+        message: string;
+        data?: any;
+    } | null;
 }
 
 type Action =
+    | { type: "SET_ROLE"; role: "doctor" | "company" | "admin" | null }
+    | { type: "SHOW_NOTIFICATION"; notification: AppState["activeNotification"] }
+    | { type: "HIDE_NOTIFICATION" }
     | { type: "ADD_BATCH"; batch: AnnotationBatch }
     | { type: "ACCEPT_BATCH"; batchId: string; doctorId: string }
     | { type: "SUBMIT_ANNOTATION"; batchId: string; annotation: Annotation; doctorId: string; hash: string }
@@ -69,12 +79,23 @@ const initialState: AppState = {
         "batch-1": 125.0,
         "batch-2": 90.0,
     },
+    userRole: null,
+    activeNotification: null,
 };
 
 /* ────────────────────────────── Reducer ────────────────────────────── */
 
 function appReducer(state: AppState, action: Action): AppState {
     switch (action.type) {
+        case "SET_ROLE":
+            return { ...state, userRole: action.role };
+
+        case "SHOW_NOTIFICATION":
+            return { ...state, activeNotification: action.notification };
+
+        case "HIDE_NOTIFICATION":
+            return { ...state, activeNotification: null };
+
         case "ADD_BATCH": {
             const now = new Date();
             return {

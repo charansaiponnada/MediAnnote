@@ -11,6 +11,9 @@ export interface Doctor {
     earnings: number;
     avatar: string;
     verified: boolean;
+    experienceYears?: number;
+    documents?: string[];
+    selfRating?: number;
 }
 
 export interface Company {

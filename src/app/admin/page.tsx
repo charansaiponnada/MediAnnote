@@ -8,8 +8,8 @@ import toast from "react-hot-toast";
 import { useWriteContract, useAccount } from "wagmi";
 import { CONTRACTS } from "@/lib/contracts";
 
-const tierLabel: Record<number, string> = { 0: "Bronze", 1: "Silver", 2: "Gold", 3: "Platinum" };
-const tierClass: Record<number, string> = { 0: "tier-bronze", 1: "tier-silver", 2: "tier-gold", 3: "tier-platinum" };
+const tierLabel: Record<number, string> = { 0: "Bronze", 1: "Silver", 2: "Gold", 3: "Platinum", 4: "Elite" };
+const tierClass: Record<number, string> = { 0: "tier-bronze", 1: "tier-silver", 2: "tier-gold", 3: "tier-platinum", 4: "tier-elite" };
 
 export default function AdminPage() {
     const { state, dispatch } = useAppStore();

@@ -18,7 +18,7 @@ contract DoctorSBT is ERC721, Ownable {
 
     struct DoctorProfile {
         string specialty;
-        uint8 tier;              // 0=Bronze, 1=Silver, 2=Gold, 3=Platinum
+        uint8 tier;              // 0=Bronze, 1=Silver, 2=Gold, 3=Platinum, 4=Elite
         uint256 reputationScore; // 0-100
         uint256 annotationCount;
     }
@@ -66,7 +66,7 @@ contract DoctorSBT is ERC721, Ownable {
         uint8 tier
     ) external onlyOwner returns (uint256) {
         require(doctorToToken[doctor] == 0, "Doctor already has SBT");
-        require(tier <= 3, "Invalid tier");
+        require(tier <= 4, "Invalid tier");
 
         uint256 tokenId = _nextTokenId++;
         _safeMint(doctor, tokenId);
@@ -100,7 +100,9 @@ contract DoctorSBT is ERC721, Ownable {
         profiles[tokenId].annotationCount = newAnnotationCount;
 
         // Auto-update tier based on score
-        if (newScore >= 90) {
+        if (newScore >= 98) {
+            profiles[tokenId].tier = 4; // Elite
+        } else if (newScore >= 90) {
             profiles[tokenId].tier = 3; // Platinum
         } else if (newScore >= 80) {
             profiles[tokenId].tier = 2; // Gold
@@ -125,7 +127,8 @@ contract DoctorSBT is ERC721, Ownable {
         if (profile.tier == 0) tierName = "Bronze";
         else if (profile.tier == 1) tierName = "Silver";
         else if (profile.tier == 2) tierName = "Gold";
-        else tierName = "Platinum";
+        else if (profile.tier == 3) tierName = "Platinum";
+        else tierName = "Elite";
 
         string memory json = string(abi.encodePacked(
             '{"name":"MediAnnote Doctor #', tokenId.toString(),

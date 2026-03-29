@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 /**
  * @title AnnotationEscrow
@@ -25,6 +26,7 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
 
     mapping(bytes32 => Batch) public batches;
     mapping(bytes32 => bytes32[]) public annotationHashes; // batchId => array of hashes
+    mapping(bytes32 => bytes32) public batchMerkleRoots; // batchId => Merkle Root of all annotations
     mapping(bytes32 => bytes32[]) public aiInsightHashes; // batchId => array of AI-generated caption hashes
 
     event FundsDeposited(
@@ -52,6 +54,13 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
     event AiInsightRecorded(
         bytes32 indexed batchId,
         bytes32 insightHash,
+        uint256 timestamp
+    );
+
+    event AnnotationBatchRecorded(
+        bytes32 indexed batchId,
+        address indexed annotator,
+        bytes32 merkleRoot,
         uint256 timestamp
     );
 
@@ -169,6 +178,35 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
         aiInsightHashes[batchId].push(insightHash);
 
         emit AiInsightRecorded(batchId, insightHash, block.timestamp);
+    }
+
+    /**
+     * @notice Record a batch of annotations using a Merkle Root
+     * @param batchId Associated batch
+     * @param merkleRoot The root of the Merkle Tree containing all annotation hashes
+     */
+    function recordAnnotationBatch(
+        bytes32 batchId,
+        bytes32 merkleRoot
+    ) external {
+        require(batches[batchId].exists, "Batch does not exist");
+        batchMerkleRoots[batchId] = merkleRoot;
+
+        emit AnnotationBatchRecorded(batchId, msg.sender, merkleRoot, block.timestamp);
+    }
+
+    /**
+     * @notice Verify an individual annotation hash against a recorded Merkle Root
+     */
+    function verifyAnnotation(
+        bytes32 batchId,
+        bytes32 annotationHash,
+        bytes32[] calldata proof
+    ) external view returns (bool) {
+        bytes32 root = batchMerkleRoots[batchId];
+        require(root != bytes32(0), "No Merkle Root recorded for this batch");
+        
+        return MerkleProof.verify(proof, root, annotationHash);
     }
 
     // View helpers
