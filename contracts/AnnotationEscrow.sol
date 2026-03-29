@@ -37,7 +37,7 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
 
     event FundsReleased(
         bytes32 indexed batchId,
-        uint256 amountPerAnnotator,
+        uint256 totalDistributed,
         uint256 platformFee,
         uint256 timestamp
     );
@@ -99,7 +99,7 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
      * @param splitBps Array of percentages (in basis points) corresponding to each annotator (must sum to 10000)
      */
     function releasePaymentWithSplits(
-        bytes32 batchId, 
+        bytes32 batchId,
         address[] calldata annotators,
         uint256[] calldata splitBps
     ) external nonReentrant {
@@ -140,7 +140,7 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
             }
         }
 
-        emit FundsReleased(batchId, 0, fee, block.timestamp);
+        emit FundsReleased(batchId, distributable, fee, block.timestamp);
     }
 
     /**

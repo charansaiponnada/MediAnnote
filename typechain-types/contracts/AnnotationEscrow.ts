@@ -26,15 +26,18 @@ import type {
 export interface AnnotationEscrowInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "aiInsightHashes"
       | "annotationHashes"
       | "batches"
       | "deposit"
+      | "getAiInsightHashes"
       | "getAnnotationHashes"
       | "getBatchAnnotators"
       | "isBatchFunded"
       | "owner"
       | "paymentToken"
       | "platformFeeBps"
+      | "recordAiInsight"
       | "recordAnnotation"
       | "releasePaymentWithSplits"
       | "renounceOwnership"
@@ -44,12 +47,17 @@ export interface AnnotationEscrowInterface extends Interface {
 
   getEvent(
     nameOrSignatureOrTopic:
+      | "AiInsightRecorded"
       | "AnnotationRecorded"
       | "FundsDeposited"
       | "FundsReleased"
       | "OwnershipTransferred"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "aiInsightHashes",
+    values: [BytesLike, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "annotationHashes",
     values: [BytesLike, BigNumberish]
@@ -58,6 +66,10 @@ export interface AnnotationEscrowInterface extends Interface {
   encodeFunctionData(
     functionFragment: "deposit",
     values: [BytesLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getAiInsightHashes",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getAnnotationHashes",
@@ -81,6 +93,10 @@ export interface AnnotationEscrowInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "recordAiInsight",
+    values: [BytesLike, BytesLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "recordAnnotation",
     values: [BytesLike, BytesLike]
   ): string;
@@ -99,11 +115,19 @@ export interface AnnotationEscrowInterface extends Interface {
   encodeFunctionData(functionFragment: "treasury", values?: undefined): string;
 
   decodeFunctionResult(
+    functionFragment: "aiInsightHashes",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "annotationHashes",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "batches", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getAiInsightHashes",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getAnnotationHashes",
     data: BytesLike
@@ -126,6 +150,10 @@ export interface AnnotationEscrowInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "recordAiInsight",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "recordAnnotation",
     data: BytesLike
   ): Result;
@@ -142,6 +170,28 @@ export interface AnnotationEscrowInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "treasury", data: BytesLike): Result;
+}
+
+export namespace AiInsightRecordedEvent {
+  export type InputTuple = [
+    batchId: BytesLike,
+    insightHash: BytesLike,
+    timestamp: BigNumberish
+  ];
+  export type OutputTuple = [
+    batchId: string,
+    insightHash: string,
+    timestamp: bigint
+  ];
+  export interface OutputObject {
+    batchId: string;
+    insightHash: string;
+    timestamp: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace AnnotationRecordedEvent {
@@ -200,19 +250,19 @@ export namespace FundsDepositedEvent {
 export namespace FundsReleasedEvent {
   export type InputTuple = [
     batchId: BytesLike,
-    amountPerAnnotator: BigNumberish,
+    totalDistributed: BigNumberish,
     platformFee: BigNumberish,
     timestamp: BigNumberish
   ];
   export type OutputTuple = [
     batchId: string,
-    amountPerAnnotator: bigint,
+    totalDistributed: bigint,
     platformFee: bigint,
     timestamp: bigint
   ];
   export interface OutputObject {
     batchId: string;
-    amountPerAnnotator: bigint;
+    totalDistributed: bigint;
     platformFee: bigint;
     timestamp: bigint;
   }
@@ -278,6 +328,12 @@ export interface AnnotationEscrow extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  aiInsightHashes: TypedContractMethod<
+    [arg0: BytesLike, arg1: BigNumberish],
+    [string],
+    "view"
+  >;
+
   annotationHashes: TypedContractMethod<
     [arg0: BytesLike, arg1: BigNumberish],
     [string],
@@ -303,6 +359,12 @@ export interface AnnotationEscrow extends BaseContract {
     "nonpayable"
   >;
 
+  getAiInsightHashes: TypedContractMethod<
+    [batchId: BytesLike],
+    [string[]],
+    "view"
+  >;
+
   getAnnotationHashes: TypedContractMethod<
     [batchId: BytesLike],
     [string[]],
@@ -322,6 +384,12 @@ export interface AnnotationEscrow extends BaseContract {
   paymentToken: TypedContractMethod<[], [string], "view">;
 
   platformFeeBps: TypedContractMethod<[], [bigint], "view">;
+
+  recordAiInsight: TypedContractMethod<
+    [batchId: BytesLike, insightHash: BytesLike],
+    [void],
+    "nonpayable"
+  >;
 
   recordAnnotation: TypedContractMethod<
     [batchId: BytesLike, annotationHash: BytesLike],
@@ -349,6 +417,13 @@ export interface AnnotationEscrow extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "aiInsightHashes"
+  ): TypedContractMethod<
+    [arg0: BytesLike, arg1: BigNumberish],
+    [string],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "annotationHashes"
   ): TypedContractMethod<
@@ -378,6 +453,9 @@ export interface AnnotationEscrow extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "getAiInsightHashes"
+  ): TypedContractMethod<[batchId: BytesLike], [string[]], "view">;
+  getFunction(
     nameOrSignature: "getAnnotationHashes"
   ): TypedContractMethod<[batchId: BytesLike], [string[]], "view">;
   getFunction(
@@ -395,6 +473,13 @@ export interface AnnotationEscrow extends BaseContract {
   getFunction(
     nameOrSignature: "platformFeeBps"
   ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "recordAiInsight"
+  ): TypedContractMethod<
+    [batchId: BytesLike, insightHash: BytesLike],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "recordAnnotation"
   ): TypedContractMethod<
@@ -419,6 +504,13 @@ export interface AnnotationEscrow extends BaseContract {
     nameOrSignature: "treasury"
   ): TypedContractMethod<[], [string], "view">;
 
+  getEvent(
+    key: "AiInsightRecorded"
+  ): TypedContractEvent<
+    AiInsightRecordedEvent.InputTuple,
+    AiInsightRecordedEvent.OutputTuple,
+    AiInsightRecordedEvent.OutputObject
+  >;
   getEvent(
     key: "AnnotationRecorded"
   ): TypedContractEvent<
@@ -449,6 +541,17 @@ export interface AnnotationEscrow extends BaseContract {
   >;
 
   filters: {
+    "AiInsightRecorded(bytes32,bytes32,uint256)": TypedContractEvent<
+      AiInsightRecordedEvent.InputTuple,
+      AiInsightRecordedEvent.OutputTuple,
+      AiInsightRecordedEvent.OutputObject
+    >;
+    AiInsightRecorded: TypedContractEvent<
+      AiInsightRecordedEvent.InputTuple,
+      AiInsightRecordedEvent.OutputTuple,
+      AiInsightRecordedEvent.OutputObject
+    >;
+
     "AnnotationRecorded(bytes32,address,bytes32,uint256)": TypedContractEvent<
       AnnotationRecordedEvent.InputTuple,
       AnnotationRecordedEvent.OutputTuple,

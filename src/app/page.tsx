@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Shield, Coins, Brain, Zap } from "lucide-react";
+import { ArrowRight, Shield, Coins, Brain, Zap, Sparkles, Scale } from "lucide-react";
 
 const stats = [
   { value: "2,450+", label: "Verified Doctors" },
@@ -22,23 +22,23 @@ const features = [
     desc: "Smart contract escrow ensures fair, instant payment in USDC — no intermediaries, no delays.",
   },
   {
-    icon: Brain,
-    title: "On-Chain Audit Trail",
-    desc: "Every annotation hash is committed to Polygon. Provably immutable data provenance for regulatory compliance.",
+    icon: Sparkles,
+    title: "AI-Assisted Drafting",
+    desc: "Xai-powered Smart Drafting reduces workload by 40% with automated bounding box suggestions.",
   },
   {
-    icon: Zap,
-    title: "Quality Consensus",
-    desc: "Inter-annotator agreement scoring ensures gold-standard annotations through multi-expert consensus.",
+    icon: Scale,
+    title: "Fair Consensus Rewards",
+    desc: "Payments are dynamically split based on contribution quality and IoU overlap among experts.",
   },
 ];
 
 const feed = [
+  { type: "ai", text: "AI Smart Draft generated for Pathological Batch 04", time: "Just now", hash: "0xe7fc...12ef" },
   { type: "deposit", text: "LungAI Diagnostics deposited $125.00 USDC for Chest X-Ray batch", time: "2 min ago", hash: "0x8f4e...1f0e" },
-  { type: "release", text: "Payment released: $81.00 to 2 annotators for Skin Lesion batch", time: "15 min ago", hash: "0x1a2b...1a2b" },
+  { type: "release", text: "Quality Payment distributed: $81.00 via IoU-consensus splits", time: "15 min ago", hash: "0x1a2b...1a2b" },
   { type: "annotation", text: "Annotation hash committed by Dr. Reddy (Radiology)", time: "22 min ago", hash: "0xab3c...9f2d" },
   { type: "sbt", text: "SBT minted: Dr. Morrison verified as Pathology expert", time: "1 hr ago", hash: "0xef12...45cd" },
-  { type: "deposit", text: "DermVision Labs deposited $160.00 USDC for Retinal OCT batch", time: "3 hrs ago", hash: "0x7890...abcd" },
 ];
 
 const feedDotColor: Record<string, string> = {
@@ -46,6 +46,7 @@ const feedDotColor: Record<string, string> = {
   release: "var(--accent-cyan)",
   sbt: "var(--accent-purple)",
   annotation: "var(--accent-amber)",
+  ai: "var(--accent-cyan)",
 };
 
 export default function LandingPage() {
@@ -210,9 +211,17 @@ export default function LandingPage() {
         borderTop: "1px solid rgba(255,255,255,0.04)",
         textAlign: "center",
       }}>
-        <span className="label-sm" style={{ color: "var(--primary-fixed)" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: "2rem", marginTop: "1rem" }}>
+          <Link href="/docs" style={{ color: "var(--accent-cyan)", textDecoration: "none", fontSize: "0.8rem", fontWeight: 600 }}>
+            Technical Documentation →
+          </Link>
+          <a href="/pitch.html" target="_blank" style={{ color: "var(--on-surface-variant)", textDecoration: "none", fontSize: "0.8rem" }}>
+            View Pitch Deck
+          </a>
+        </div>
+        <div style={{ marginTop: "1.5rem", color: "var(--primary-fixed)", fontSize: "0.75rem" }}>
           MediAnnote © 2026 — Polygon Mumbai Testnet
-        </span>
+        </div>
       </footer>
     </div>
   );

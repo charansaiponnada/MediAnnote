@@ -12,6 +12,7 @@ import {
     BrainCircuit,
     Coins,
     Loader2,
+    Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { useAppStore } from "@/lib/store";
@@ -91,7 +92,7 @@ export default function AuditPage({
                 toast.loading("Releasing funds from Escrow… Confirm in MetaMask.", { id: "releaseTx" });
                 const rawBatchId = batch.batchId || batch.id;
                 const bytes32BatchId = isHex(rawBatchId) ? pad(rawBatchId as `0x${string}`, { size: 32 }) : pad(stringToHex(rawBatchId), { size: 32 });
-                
+
                 await writeContractAsync({
                     ...CONTRACTS.AnnotationEscrow,
                     functionName: "releasePaymentWithSplits",
@@ -156,8 +157,8 @@ export default function AuditPage({
                         <h3 className="font-semibold text-white">Consensus Reward Engine</h3>
                     </div>
                     {batch.status === "completed" && !consensusResult && (
-                        <button 
-                            className="btn-primary py-1.5 px-4 text-xs" 
+                        <button
+                            className="btn-primary py-1.5 px-4 text-xs"
                             onClick={handleRunConsensus}
                             disabled={isCalculating}
                         >
@@ -201,7 +202,7 @@ export default function AuditPage({
                         </div>
 
                         {batch.status !== "paid" ? (
-                            <button 
+                            <button
                                 className="btn-primary w-full justify-center gap-2 bg-emerald-600 hover:bg-emerald-500"
                                 onClick={handleReleasePayment}
                                 disabled={isReleasing}

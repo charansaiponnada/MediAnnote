@@ -22,6 +22,13 @@ npm install --legacy-peer-deps
 
 # Run development server
 npm run dev
+
+# Run Python ML Service (in a separate terminal)
+cd ml-service
+python -m venv venv
+source venv/bin/activate  # or .\venv\Scripts\activate on Windows
+pip install -r requirements.txt
+python main.py
 ```
 
 Open [http://localhost:3000](http://localhost:3000)
@@ -105,13 +112,14 @@ npx hardhat run scripts/deploy.ts --network mumbai
    - Upload images → Define labels → Set budget → **Fund Escrow**
    - Final step simulates MetaMask transaction with loading state
 
-### Scene 4: Admin & Audit
-1. Switch to **Admin** → See doctor verification table
-2. Click **"Approve & Mint SBT"** for pending doctor → SBT minting simulation
-3. Click **"View Details"** on a dataset → Navigate to **Audit Report** showing:
-   - Annotator wallet addresses (truncated)
-   - On-chain annotation hashes with timestamps
-   - Escrow transaction links to Polygonscan
+### Scene 4: AI & Audit
+1. Switch to **Admin** → See doctor verification table.
+2. Click **"Approve & Mint SBT"** for pending doctor → SBT minting simulation.
+3. Select a dataset → Navigate to **Audit Report** showing:
+   - **Blockchain AI Provenance Trail**: Multi-stage hashes (Draft → Caption → Submission) ensuring immutability.
+   - **Consensus Reward Engine**: Calculate fair reward splits based on IoU overlap.
+   - **Finalize Rewards**: Confirm splitting payments on-chain via `releasePaymentWithSplits`.
+4. Return to **Company Dashboard** → View **Model Metrics** (Accuracy, F1, Confusion Matrix) and download PDF reports.
 
 ---
 

@@ -127,6 +127,76 @@
         .reveal .progress {
             color: var(--accent-cyan);
         }
+
+        /* Architecture Styles */
+        .arch-layer {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            font-size: 0.7em;
+            position: relative;
+        }
+
+        .arch-title {
+            font-weight: 800;
+            color: var(--accent-cyan);
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .arch-item {
+            color: white;
+            opacity: 0.8;
+            margin: 4px 0;
+        }
+
+        .arch-arrow {
+            text-align: center;
+            font-size: 1.5em;
+            color: var(--on-surface-variant);
+            opacity: 0.4;
+            margin: 10px 0;
+        }
+
+        .arch-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 20px;
+            align-items: center;
+        }
+
+        /* Flow Diagram Styles */
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .flow-step {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 6px;
+            width: 80%;
+            text-align: center;
+            font-size: 0.7em;
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .flow-dot {
+            width: 4px;
+            height: 4px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            opacity: 0.3;
+        }
     </style>
 </head>
 
@@ -139,9 +209,9 @@
                 <h1 class="gradient-text">MediAnnote</h1>
                 <div class="monolith-line"></div>
                 <h3 style="font-weight: 400; letter-spacing: -0.01em;">
-                    A specialization platform for doctors to annotate images, train ML models, and get paid.
+                    The Trustless Standard for <span class="accent">Specialized</span> Medical AI Training.
                 </h3>
-                <p style="margin-top: 40px; font-size: 0.9em;">Transparent. Secure. Fair.</p>
+                <p style="margin-top: 40px; font-size: 0.9em; opacity: 0.6;">Final Phase — Hackathon 2026</p>
             </section>
 
             <!-- The Problem Statement -->
@@ -188,10 +258,14 @@
                     startups, supercharged by <strong>Xai</strong>.</p>
 
                 <ul style="margin-top: 40px; display: inline-block; text-align: left;">
-                    <li><strong class="emerald">Xai-Assisted Workflow:</strong> Smart Drafting & Clinical Captioning (10x productivity).</li>
-                    <li><strong class="emerald">Blockchain Provenance:</strong> AI & Doctor insight hashes stored on-chain for total auditability.</li>
-                    <li><strong class="emerald">Consensus Reward Engine:</strong> Dynamic payouts based on IoU (Intersection over Union).</li>
-                    <li><strong class="emerald">NIH Clinical Standard:</strong> Integrated with real-world ChestX-ray14 dataset (14 categories).</li>
+                    <li><strong class="emerald">Xai Smart Drafting:</strong> Reducing doctor workload by 40% with
+                        automated AI pre-annotations.</li>
+                    <li><strong class="emerald">Consensus Reward Engine:</strong> Fair, IoU-based payment splits to
+                        incentivize multi-expert accuracy.</li>
+                    <li><strong class="emerald">Blockchain Provenance:</strong> Immutable audit trail of AI vs Human
+                        insights for regulatory (FDA) compliance.</li>
+                    <li><strong class="emerald">Soulbound Medical Identity:</strong> Verified doctor credentials (SBTs)
+                        that build on-chain reputation.</li>
                 </ul>
             </section>
 
@@ -202,15 +276,18 @@
                 <div class="grid-2">
                     <div class="box">
                         <h4 class="emerald">Xai Smart Draft</h4>
-                        <p style="font-size: 0.8em;">Pre-identifies anomalies using computer vision. Doctors refine, they don't start from scratch.</p>
+                        <p style="font-size: 0.8em;">Pre-identifies anomalies using computer vision. Doctors refine,
+                            they don't start from scratch.</p>
                     </div>
                     <div class="box">
                         <h4 class="emerald">Xai Captionist</h4>
-                        <p style="font-size: 0.8em;">Generates clinical notes from visual shapes. Bridging the gap between vision and language.</p>
+                        <p style="font-size: 0.8em;">Generates clinical notes from visual shapes. Bridging the gap
+                            between vision and language.</p>
                     </div>
                 </div>
                 <div class="box" style="margin-top: 20px; text-align: center;">
-                    <p style="font-size: 0.9em; color: var(--accent-cyan);">Every Xai suggestion is hashed and recorded on Polygon <strong>before</strong> doctor edits, creating a "Provenance Trail".</p>
+                    <p style="font-size: 0.9em; color: var(--accent-cyan);">Every Xai suggestion is hashed and recorded
+                        on Polygon <strong>before</strong> doctor edits, creating a "Provenance Trail".</p>
                 </div>
             </section>
 
@@ -232,27 +309,69 @@
 
 
 
-            <!-- Tech Stack (Criteria 1) -->
+            <!-- Visual System Architecture -->
             <section>
-                <h2>A Scalable, <span class="gradient-text">Polyglot Tech Stack</span></h2>
-                <div class="grid-2">
-                    <div style="text-align: left;">
-                        <p><strong class="accent">Frontend:</strong> Next.js 14, Zustand, TailwindCSS, Recharts</p>
-                        <p><strong class="accent">MLOps Core:</strong> Python, FastAPI, SSE (Starlette)</p>
-                        <p><strong class="accent">Storage Pipeline:</strong> IndexedDB (idb-keyval), HTML5 Canvas, Blob
-                            URLs</p>
-                        <p><strong class="accent">Web3 Ecosystem:</strong> Wagmi, Viem, Polygon Amoy Testnet</p>
-                        <p><strong class="accent">Data Rendering:</strong> Konva.js, jsPDF, html2canvas</p>
+                <h2>System <span class="accent">Architecture</span></h2>
+                <div class="arch-grid">
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Layer 1 -->
+                        <div class="arch-layer">
+                            <div class="arch-title">Frontend Experience Layer</div>
+                            <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px;">
+                                <div class="arch-item">Next.js 14 (App Router)</div>
+                                <div class="arch-item">TailwindCSS</div>
+                                <div class="arch-item">Konva.js / Canvas</div>
+                                <div class="arch-item">Wagmi / viem</div>
+                                <div class="arch-item">Recharts / SVG</div>
+                            </div>
+                        </div>
+
+                        <div class="arch-arrow">⇅</div>
+
+                        <!-- Layer 2 & 3 Combined for Space -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div class="arch-layer" style="border-color: var(--accent-emerald);">
+                                <div class="arch-title" style="color: var(--accent-emerald);">ML-Service (Python)</div>
+                                <div class="arch-item">FastAPI / Uvicorn</div>
+                                <div class="arch-item">PyTorch Inference</div>
+                                <div class="arch-item">SSE Streams (sse-starlette)</div>
+                                <div class="arch-item">OpenCV / NumPy</div>
+                            </div>
+                            <div class="arch-layer" style="border-color: var(--accent-cyan);">
+                                <div class="arch-title">Web3 Layer (Polygon)</div>
+                                <div class="arch-item">Solidity v0.8.28</div>
+                                <div class="arch-item">Hardhat / OpenZeppelin</div>
+                                <div class="arch-item">AnnotationEscrow.sol</div>
+                                <div class="arch-item">DoctorSBT.sol</div>
+                            </div>
+                        </div>
+
+                        <div class="arch-arrow">⇅</div>
+
+                        <!-- Layer 4 -->
+                        <div class="arch-layer">
+                            <div class="arch-title" style="color: var(--primary-fixed);">Storage & Standards</div>
+                            <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px;">
+                                <div class="arch-item">IndexedDB (idb-keyval)</div>
+                                <div class="arch-item">DICOM / DICOMweb</div>
+                                <div class="arch-item">COCO JSON Standard</div>
+                                <div class="arch-item">Blob API / SHA-256</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="box" style="margin-top:0;">
-                        <h4 style="color: var(--accent-emerald); font-size: 1.1em; margin-bottom: 10px;">
-                            Industry-Oriented Architecture</h4>
-                        <p style="font-size: 0.9em; text-align: left; color: white;">
-                            We bypassed simplistic monoliths in favor of a <strong>heterogeneous polyglot
-                                microservice</strong> architecture. Heavy lifting (ML processing, SSE streams) is
-                            cleanly decoupled into a Python FastAPI service, while the high-fidelity UI runs blazingly
-                            fast in a Next.js Edge environment.
-                        </p>
+
+                    <div class="box" style="margin: 0; padding: 25px;">
+                        <h4 style="color: white; margin-bottom: 15px;">Decoupled Heterogeneous Stack</h4>
+                        <ul style="font-size: 0.75em; line-height: 1.5;">
+                            <li><strong>Async MLOps Core:</strong> Decouples heavy inference into Python backend via SSE
+                                Streams.</li>
+                            <li><strong>Zero-Latency UI:</strong> High-performance image loading using browser-level
+                                `IndexedDB` caching.</li>
+                            <li><strong>On-Chain Integrity:</strong> Immutable hashes and escrow-release logic secured
+                                on Polygon PoS.</li>
+                            <li><strong>Clinical Monolith:</strong> Industrial UI/UX designed for radiologists using
+                                modern React patterns.</li>
+                        </ul>
                     </div>
                 </div>
             </section>
@@ -327,46 +446,135 @@
 
 
 
-            <!-- User Journey 1 -->
+            <!-- User Journey 1: The Startup -->
             <section>
                 <h2>How It Works: <span class="accent">The Startup</span></h2>
-                <ol style="margin-top: 30px;">
-                    <li>Uploads raw medical images (X-Rays, Retina Scans).</li>
-                    <li>Platform strictly strips Protected Health Info (PHI).</li>
-                    <li>Company defines labels & deposits <strong>USDC into Escrow</strong>.</li>
-                    <li>Monitors real-time progress & generates detailed Confusion Matrices.</li>
-                    <li>Receives a mathematically proven, expert-validated dataset.</li>
-                </ol>
+                <div class="grid-2">
+                    <div class="flow-container">
+                        <div class="flow-step">1. Upload Raw DICOM/Images</div>
+                        <div class="flow-dot"></div>
+                        <div class="flow-step"
+                            style="border-color: var(--accent-emerald); color: var(--accent-emerald);">2. Local PHI
+                            Scrubbing (Edge)</div>
+                        <div class="flow-dot"></div>
+                        <div class="flow-step">3. Deposit USDC into Escrow</div>
+                        <div class="flow-dot"></div>
+                        <div class="flow-step">4. Real-time Training Monitoring</div>
+                        <div class="flow-dot"></div>
+                        <div class="flow-step" style="background: var(--accent-cyan); color: black;">5. Export Validated
+                            Dataset</div>
+                    </div>
+                    <div style="text-align: left;">
+                        <p style="font-size: 0.8em; margin-bottom: 20px;">The Startup pipeline is designed for
+                            <strong>Total Regulatory Preparedness</strong>.</p>
+                        <ul style="font-size: 0.7em;">
+                            <li>Uploads raw scans; our Python microservice strips Patient Info (PHI) locally.</li>
+                            <li>Company defines target labels & funds the <strong>Polygon Smart Contract
+                                    Escrow</strong>.</li>
+                            <li>Monitors doctor progress & training epochs via live visual terminal.</li>
+                            <li>Downloads expert-validated assets with a full <strong>Blockchain Audit Trail</strong>.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </section>
 
 
 
-            <!-- User Journey 2 -->
+            <!-- User Journey 2: The Doctor -->
             <section>
                 <h2>How It Works: <span class="emerald">The Doctor</span></h2>
-                <ol style="margin-top: 30px;">
-                    <li>Applies with credentials (Governor approves > Mints SBT).</li>
-                    <li>Connects Wallet or Bank Account.</li>
-                    <li>Reviews assigned batch and annotates via clinical interface.</li>
-                    <li>Cross-referenced with 2+ other doctors for Consensus (IAA metric).</li>
-                    <li>Earns <strong class="emerald">instant USDC payout</strong> via Smart Contract release.</li>
-                </ol>
+                <div class="grid-2">
+                    <div class="flow-container">
+                        <div class="flow-step">1. Connect Wallet & Verify Credentials</div>
+                        <div class="flow-dot"></div>
+                        <div class="flow-step" style="border-color: var(--accent-purple); color: var(--accent-purple);">
+                            2. Receive SBT Identity Token</div>
+                        <div class="flow-dot"></div>
+                        <div class="flow-step">3. Annotate via "Clinical Monolith" UI</div>
+                        <div class="flow-dot"></div>
+                        <div class="flow-step">4. Verify via Consensus Engine</div>
+                        <div class="flow-dot"></div>
+                        <div class="flow-step" style="background: var(--accent-emerald); color: black;">5. Receive
+                            Instant USDC Payout</div>
+                    </div>
+                    <div style="text-align: left;">
+                        <p style="font-size: 0.8em; margin-bottom: 20px;">The Doctor experience focuses on
+                            <strong>Monetizing Medical Expertise</strong> fairly.</p>
+                        <ul style="font-size: 0.7em;">
+                            <li>Doctors authenticate via Web3; credentials are verified by Governor.</li>
+                            <li>Receives a <strong>Soulbound Token (SBT)</strong> that tracks lifespan accuracy.</li>
+                            <li>Annotates images using AI-assisted tools (Smart Drafting & Clinical Captionist).</li>
+                            <li>Payments are triggered instantly by smart contracts upon <strong>Consensus
+                                    Approval</strong>.</li>
+                        </ul>
+                    </div>
+                </div>
             </section>
 
 
 
-            <!-- Business Model -->
+            <!-- Scaling Strategy -->
             <section>
-                <h2>Business <span class="gradient-text">Model</span></h2>
-                <p>Monetization designed for massive scale.</p>
+                <h2>Scaling to <span class="accent">Global Impact</span></h2>
+                <div class="grid-2">
+                    <div class="box">
+                        <h4 class="accent">Horizontal Scaling</h4>
+                        <p style="font-size: 0.75em;">
+                            Expanding from Radiology to <strong>Pathology, Ophthalmology, and Histology</strong> —
+                            fields where high-resolution visual expertise is the primary bottleneck for AI.
+                        </p>
+                    </div>
+                    <div class="box">
+                        <h4 class="accent">PACS Integration</h4>
+                        <p style="font-size: 0.75em;">
+                            Building direct <strong>DICOMweb</strong> connectors to Hospital PACS systems, allowing
+                            doctors to annotate during natural idle time in their workflow.
+                        </p>
+                    </div>
+                </div>
+                <div class="box" style="margin-top: 20px;">
+                    <p style="font-size: 0.85em; text-align: center;">Leveraging <strong>Polygon's low-latency
+                            L2</strong> to handle thousands of concurrent global annotators with sub-penny transaction
+                        costs.</p>
+                </div>
+            </section>
+
+            <!-- Revenue Model -->
+            <section>
+                <h2>A Sustainable <span class="emerald">Revenue Model</span></h2>
+                <div class="grid-2">
+                    <div style="text-align: left;">
+                        <p><strong>1. Transactional (10%):</strong> Protocol fee on all successfully settled escrow
+                            payments.</p>
+                        <p><strong>2. SaaS Infrastructure:</strong> Tiered pricing for AI companies for dedicated
+                            "Private Pools" of elite doctors.</p>
+                        <p><strong>3. Provenance as a Service:</strong> Premium API for generating Regulator-Ready
+                            (FDA/CE) Audit Reports.</p>
+                    </div>
+                    <div class="box">
+                        <h3 class="emerald" style="font-size: 1.4em;">Projected ROI</h3>
+                        <p style="font-size: 0.8em; color: white;">By reducing cycle time by 40% and eliminating
+                            middlemen, we increase doctor payouts while decreasing company costs — a unique
+                            <strong>Efficiency Alpha</strong>.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Production Feasibility -->
+            <section>
+                <h2>Production <span class="accent">Feasibility</span></h2>
                 <div class="box">
-                    <ul>
-                        <li><strong>10% Protocol Fee:</strong> Deducted directly from on-chain escrow upon successful
-                            settlement.</li>
-                        <li><strong>MAT Token Utility:</strong> Pay fees in MAT for a 20% discount. Doctors stake MAT
-                            for priority high-paying tasks.</li>
-                        <li><strong>Secondary Royalties:</strong> 2% perpetual smart-contract royalties to annotators if
-                            datasets are resold.</li>
+                    <ul style="font-size: 0.85em;">
+                        <li><strong>Standard Compliance:</strong> Deep integration with COCO JSON for ML pipelines and
+                            DICOM standards for medical imaging.</li>
+                        <li><strong>HIPAA Safe:</strong> PHI Scrubbing is handled locally/edge via our Python ML
+                            microservice before any data touches the blockchain.</li>
+                        <li><strong>Gradual Web3 Adoption:</strong> "Dual-Rail" architecture allows companies to pay in
+                            FIAT (on-ramps) while doctors receive instant USDC.</li>
+                        <li><strong>Scale-Ready:</strong> Decoupled Python-FastAPI backend is ready for containerization
+                            (Docker/Kubernetes) and cloud-GPU acceleration.</li>
                     </ul>
                 </div>
             </section>
@@ -383,6 +591,33 @@
                     <li><strong class="accent">Phase 4:</strong> Expansion to Legal & Scientific verifiable annotation
                         markets.</li>
                 </ul>
+            </section>
+
+            <!-- Summary Slide -->
+            <section>
+                <h2>The <span class="emerald">MediAnnote</span> Edge</h2>
+                <div class="grid-2">
+                    <div class="box">
+                        <h4 style="color: var(--accent-cyan); font-size: 1.1em; margin-bottom: 15px;">Technical
+                            Excellence</h4>
+                        <ul style="font-size: 0.7em;">
+                            <li><strong>3 Smart Contracts:</strong> (Escrow, MockUSDC, SBT) deployed on Amoy.</li>
+                            <li><strong>Async MLOps:</strong> Real-time SSE-powered training simulation.</li>
+                            <li><strong>High Fidelity:</strong> 11+ functional responsive application routes.</li>
+                            <li><strong>Clinical Grade:</strong> Built with radiologist-optimized UX.</li>
+                        </ul>
+                    </div>
+                    <div class="box">
+                        <h4 style="color: var(--accent-emerald); font-size: 1.1em; margin-bottom: 15px;">Xai Innovation
+                        </h4>
+                        <ul style="font-size: 0.7em;">
+                            <li><strong>Smart Drafting:</strong> 40% speed gain via AI pre-annotation.</li>
+                            <li><strong>Consensus Engine:</strong> Trustless fairness via IoU-based reward splits.</li>
+                            <li><strong>Provenance Trail:</strong> Immutable audit trail of AI vs Doctor insights.</li>
+                            <li><strong>Standards-Ready:</strong> DICOM / COCO JSON export pipelines.</li>
+                        </ul>
+                    </div>
+                </div>
             </section>
 
             <!-- Final Slide -->

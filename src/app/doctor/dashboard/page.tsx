@@ -5,8 +5,15 @@ import { formatUSDCRaw } from "@/lib/utils";
 import Link from "next/link";
 import {
     Activity, Star, Wallet, ListTodo, ShieldCheck,
-    UploadCloud, Edit3, CheckCircle, Clock, ChevronRight, Award, DollarSign, ArrowRight
+    UploadCloud, Edit3, CheckCircle, Clock, ChevronRight, Award, DollarSign, ArrowRight,
+    Shield, UserCheck, Flame, Loader2
 } from "lucide-react";
+import { useAccount, useWriteContract, useReadContract } from "wagmi";
+import { CONTRACTS } from "@/lib/contracts";
+import toast from "react-hot-toast";
+import { isHex, pad, stringToHex } from "viem";
+
+import { useState } from "react";
 
 const tierClass: Record<number, string> = { 0: "tier-bronze", 1: "tier-silver", 2: "tier-gold", 3: "tier-platinum" };
 const tierLabel: Record<number, string> = { 0: "Bronze", 1: "Silver", 2: "Gold", 3: "Platinum" };
@@ -22,12 +29,45 @@ const feedColor: Record<string, string> = {
 };
 
 export default function DoctorDashboard() {
-    const { state } = useAppStore();
-    const doctor = state.doctors[0];
+    const { state, dispatch } = useAppStore();
+    const { isConnected, address } = useAccount();
+    const { writeContractAsync } = useWriteContract();
+    const [isMinting, setIsMinting] = useState(false);
+
+    // In a real app, we would find the doctor by wallet. For demo, we use doc-1 (Ananya) 
+    // unless the connected wallet matches one of the mock doctors.
+    const doctor = state.doctors.find(d => d.wallet.toLowerCase() === address?.toLowerCase()) || state.doctors[0];
+
     const active = state.batches.filter(
         (b) => b.assignedDoctors.includes(doctor.id) && b.status !== "completed" && b.status !== "paid"
     );
     const openBatches = state.batches.filter((b) => b.status === "open" || (b.status === "in_progress" && !b.assignedDoctors.includes(doctor.id)));
+
+    const handleMintSBT = async () => {
+        setIsMinting(true);
+        try {
+            if (!isConnected) {
+                toast.loading("DEMO MODE: Simulating SBT Minting…", { id: "sbtTx" });
+                await new Promise(r => setTimeout(r, 2000));
+                toast.dismiss("sbtTx");
+            } else {
+                toast.loading("Minting your Soulbound Identity on Polygon…", { id: "sbtTx" });
+                await writeContractAsync({
+                    ...CONTRACTS.DoctorSBT,
+                    functionName: "mint",
+                    args: [address!, doctor.specialty, doctor.tier],
+                });
+                toast.dismiss("sbtTx");
+            }
+            dispatch({ type: "APPROVE_DOCTOR", doctorId: doctor.id });
+            toast.success("Identity Verified! SBT Minted Successfully.");
+        } catch (e) {
+            console.error(e);
+            toast.error("Minting failed or was rejected.");
+        } finally {
+            setIsMinting(false);
+        }
+    };
 
     const statCards = [
         { label: "Total Earnings", value: `$${doctor.earnings.toLocaleString("en-US", { minimumFractionDigits: 2 })}`, suffix: " USDC", icon: DollarSign, color: "var(--accent-emerald)" },

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import {
     ExternalLink, Brain, Loader2, CheckCircle, Zap,
-    BarChart3, Cpu, Play, Settings, FileText
+    BarChart3, Cpu, Play, Settings, FileText, Download, Database, ChevronRight, X
 } from "lucide-react";
 import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
@@ -25,6 +25,17 @@ export default function CompanyDashboard() {
     const [metricsModalOpen, setMetricsModalOpen] = useState<string | null>(null);
     const [isTerminalOpen, setIsTerminalOpen] = useState(false);
     const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
+
+    const [isHFTerminalOpen, setIsHFTerminalOpen] = useState(false);
+    const [hfLogs, setHfLogs] = useState<{ text: string, type: 'input' | 'system' }[]>([
+        { text: "medi-annote-hf-uploader-v1 init...", type: 'system' },
+        { text: "Enter Hugging Face Username:", type: 'system' }
+    ]);
+    const [hfInput, setHfInput] = useState("");
+    const [hfStep, setHfStep] = useState<0 | 1 | 2>(0); // 0: username, 1: token, 2: uploading
+    const [hfModel, setHfModel] = useState<MLModel | null>(null);
+
+    const [downloadModalOpen, setDownloadModalOpen] = useState<string | null>(null);
 
     const totalAnnotated = batches.reduce((a, b) => a + b.annotatedImages, 0);
     const totalImages = batches.reduce((a, b) => a + b.totalImages, 0);
@@ -160,6 +171,74 @@ export default function CompanyDashboard() {
         }
     };
 
+    const handleHFSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!hfInput.trim() || hfStep === 2) return;
+
+        if (hfStep === 0) {
+            setHfLogs(p => [...p, { text: hfInput, type: 'input' }, { text: "HF_TOKEN required for write access:", type: 'system' }]);
+            setHfStep(1);
+            setHfInput("");
+        } else if (hfStep === 1) {
+            setHfLogs(p => [...p, { text: "*".repeat(hfInput.length), type: 'input' }, { text: "[INFO] Authenticating...", type: 'system' }]);
+            setHfStep(2);
+            setHfInput("");
+
+            // Start push simulation
+            setTimeout(() => {
+                setHfLogs(p => [...p, { text: "[INFO] Authentication Success.", type: 'system' }, { text: `[INFO] Creating repository: ${hfModel?.name.toLowerCase().replace(/\s+/g, '-')}`, type: 'system' }]);
+
+                setTimeout(() => {
+                    setHfLogs(p => [...p, { text: "[UPLOAD] lfs-objects (421MB) [■■■■■■■■■■■■] 100%", type: 'system' }, { text: "✓ Successfully pushed to HF Hub!", type: 'system' }]);
+                    toast.success("Model Published to 🤗 Hub!", { style: { border: "1px solid #FFD21E", color: "#fff", background: "#111" } });
+                    setTimeout(() => setIsHFTerminalOpen(false), 2000);
+                }, 1500);
+            }, 1000);
+        }
+    };
+
+    const handleDownload = (batchId: string, format: string) => {
+        const batch = batches.find(b => b.id === batchId);
+        if (!batch) return;
+
+        toast.loading(`Preparing ${format} export...`, { id: "export" });
+
+        // Simulate file content generation
+        let content = "";
+        let extension = "json";
+
+        if (format.includes("COCO")) {
+            content = JSON.stringify({
+                info: { description: batch.title, year: 2026 },
+                images: Array(batch.totalImages).fill(0).map((_, i) => ({ id: i, file_name: `im_${i}.dcm` })),
+                annotations: Array(batch.annotatedImages).fill(0).map((_, i) => ({ id: i, image_id: i, category_id: 1, bbox: [100, 200, 50, 50] }))
+            }, null, 2);
+            extension = "json";
+        } else if (format.includes("CSV")) {
+            content = "image_id,label,confidence,doctor_hash\n" +
+                Array(batch.annotatedImages).fill(0).map((_, i) => `img_${i},abnormality_detected,0.92,0x...`).join("\n");
+            extension = "csv";
+        } else {
+            content = `<?xml version="1.0"?>\n<annotation>\n  <folder>${batch.title}</folder>\n  <filename>sample.dcm</filename>\n</annotation>`;
+            extension = "xml";
+        }
+
+        setTimeout(() => {
+            const blob = new Blob([content], { type: "text/plain" });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `MediAnnote_${batch.title.replace(/\s+/g, "_")}.${extension}`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            toast.success(`${format} downloaded successfully!`, { id: "export" });
+            setDownloadModalOpen(null);
+        }, 1500);
+    };
+
     return (
         <div style={{ background: "var(--surface)", minHeight: "100svh" }}>
             <div style={{ maxWidth: 1200, margin: "0 auto", padding: "2.5rem 1.5rem" }}>
@@ -253,6 +332,11 @@ export default function CompanyDashboard() {
                                         <Link href={`/company/dataset/${batch.id}`} className="btn-secondary" style={{ textDecoration: "none", textAlign: "center" }}>
                                             Details
                                         </Link>
+                                        <button className="btn-secondary"
+                                            onClick={() => setDownloadModalOpen(batch.id)}
+                                            style={{ display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
+                                            <Download size={14} /> Download Dataset
+                                        </button>
                                         {pct >= 50 && !isPaid && escrow > 0 && (
                                             <button className="btn-primary" onClick={() => handleRelease(batch.id)}>
                                                 Release Payment
@@ -342,12 +426,15 @@ export default function CompanyDashboard() {
                                                 <button className="btn-secondary" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }} onClick={() => setMetricsModalOpen(model.name)}>
                                                     <BarChart3 size={14} /> View Metrics
                                                 </button>
-                                                <button className="btn-primary" style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "linear-gradient(90deg, #FFD21E, #F97316)", color: "#000", border: "none" }} onClick={async () => {
-                                                    toast.loading(`Authenticating with Hugging Face...`, { id: "hf" });
-                                                    await new Promise(r => setTimeout(r, 1500));
-                                                    toast.loading(`Pushing ${model.name} to Hub...`, { id: "hf" });
-                                                    await new Promise(r => setTimeout(r, 2000));
-                                                    toast.success(`Model Published to 🤗 Hub!`, { id: "hf", style: { border: "1px solid #FFD21E", color: "#fff", background: "#111" } });
+                                                <button className="btn-primary" style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "linear-gradient(90deg, #FFD21E, #F97316)", color: "#000", border: "none" }} onClick={() => {
+                                                    setHfModel(model);
+                                                    setHfLogs([
+                                                        { text: "medi-annote-hf-uploader-v1 init...", type: 'system' },
+                                                        { text: "Enter Hugging Face Username:", type: 'system' }
+                                                    ]);
+                                                    setHfStep(0);
+                                                    setHfInput("");
+                                                    setIsHFTerminalOpen(true);
                                                 }}>
                                                     <span style={{ fontSize: "1.1rem" }}>🤗</span> Push to HF Hub
                                                 </button>
@@ -384,6 +471,95 @@ export default function CompanyDashboard() {
                                 </div>
                             ))}
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* HuggingFace Terminal Modal */}
+            {isHFTerminalOpen && (
+                <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, backdropFilter: "blur(4px)" }}>
+                    <div style={{ background: "#050505", border: "1px solid #FFD21E33", borderRadius: "0.5rem", width: "90%", maxWidth: 650, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.8)" }}>
+                        <div style={{ background: "#FFD21E11", padding: "0.75rem 1rem", borderBottom: "1px solid #FFD21E22", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                                <span style={{ fontSize: "1rem" }}>🤗</span>
+                                <span className="label-sm" style={{ color: "#FFD21E", fontFamily: "monospace" }}>hugging-face-hub --cli-push</span>
+                            </div>
+                            <button onClick={() => setIsHFTerminalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ff5f56' }}><X size={16} /></button>
+                        </div>
+                        <div style={{ padding: "1.5rem", height: 320, overflowY: "auto", fontFamily: "'JetBrains Mono', monospace", fontSize: "0.85rem", color: "#ddd", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                            {hfLogs.map((log, i) => (
+                                <div key={i} style={{
+                                    paddingLeft: log.type === 'input' ? "1rem" : 0,
+                                    color: log.type === 'input' ? "white" : (log.text.startsWith("✓") ? "var(--accent-emerald)" : "#bbb"),
+                                    display: 'flex',
+                                    gap: '0.5rem'
+                                }}>
+                                    {log.type === 'input' && <span style={{ color: 'var(--accent-cyan)' }}>—›</span>}
+                                    {log.text}
+                                </div>
+                            ))}
+                            <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                                <span style={{ color: "var(--accent-cyan)" }}>❯</span>
+                                <form onSubmit={handleHFSubmit} style={{ flex: 1 }}>
+                                    <input
+                                        autoFocus
+                                        type={hfStep === 1 ? "password" : "text"}
+                                        value={hfInput}
+                                        onChange={(e) => setHfInput(e.target.value)}
+                                        disabled={hfStep === 2}
+                                        style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: "white",
+                                            width: "100%",
+                                            outline: "none",
+                                            fontFamily: "inherit",
+                                            fontSize: "inherit"
+                                        }}
+                                    />
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Download Formats Modal */}
+            {downloadModalOpen && (
+                <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 105, backdropFilter: "blur(4px)" }}>
+                    <div className="card" style={{ padding: "2.5rem", width: "95%", maxWidth: 500, textAlign: "center", animation: "modalIn 0.3s ease-out" }}>
+                        <div style={{ marginBottom: "1.5rem", display: "inline-flex", background: "var(--accent-cyan-dim)", padding: "1rem", borderRadius: "50%", color: "var(--accent-cyan)" }}>
+                            <Database size={32} />
+                        </div>
+                        <h2 className="headline-sm" style={{ marginBottom: "0.5rem" }}>Export Dataset</h2>
+                        <p className="body-md" style={{ color: "var(--on-surface-variant)", marginBottom: "2rem" }}>
+                            Select your preferred annotation format for the validated expert data.
+                        </p>
+
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "0.75rem" }}>
+                            {[
+                                { n: "COCO JSON", d: "Standard format for computer vision tasks" },
+                                { n: "Pascal VOC (XML)", d: "Bbox coordinates in per-image XML structure" },
+                                { n: "Pandas CSV", d: "Flat table of image IDs and clinical captions" },
+                                { n: "DICOM-SR", d: "Structured Report for medical compatibility" },
+                            ].map(f => (
+                                <button key={f.n} className="btn-secondary" style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "flex-start",
+                                    padding: "1rem 1.5rem",
+                                    gap: "0.25rem"
+                                }} onClick={() => handleDownload(downloadModalOpen!, f.n)}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                                        <span className="title-md" style={{ fontSize: "1rem" }}>{f.n}</span>
+                                        <ChevronRight size={14} color="var(--primary-fixed)" />
+                                    </div>
+                                    <span style={{ fontSize: "0.75rem", color: "var(--primary-fixed)" }}>{f.d}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        <button className="btn-secondary" style={{ marginTop: "1.5rem", width: "100%" }} onClick={() => setDownloadModalOpen(null)}>Cancel</button>
                     </div>
                 </div>
             )}
@@ -505,13 +681,6 @@ export default function CompanyDashboard() {
                                 </div>
                             )}
                         </div>
-                    </div>
-                );
-            })()}
-        </div>
-    );
-}
-             </div>
                     </div>
                 );
             })()}
