@@ -16,6 +16,9 @@ import { useRouter } from "next/navigation";
 import { useWriteContract, useAccount } from "wagmi";
 import { pad, stringToHex, isHex } from "viem";
 import { CONTRACTS } from "@/lib/contracts";
+import { MerkleTree } from "merkletreejs";
+import keccak256 from "keccak256";
+import { startWorkSession, submitGaslessTransaction, type WorkSession } from "@/lib/session-keys";
 
 const labelColors: Record<string, string> = {
     Pneumonia: "#ef4444", Nodule: "#f59e0b", Normal: "#22c55e",
@@ -444,11 +447,6 @@ export default function AnnotateWorkspace({
     const deleteAnnotation = (id: string) => {
         setAnnotations((prev) => prev.filter((a) => a.id !== id));
     };
-
-import { MerkleTree } from "merkletreejs";
-import keccak256 from "keccak256";
-
-import { startWorkSession, submitGaslessTransaction, type WorkSession } from "@/lib/session-keys";
 
 // ... inside AnnotateWorkspace
     const [session, setSession] = useState<WorkSession | null>(null);

@@ -8,6 +8,8 @@ import { useAppStore } from "@/lib/store";
 import { useWriteContract, useAccount } from "wagmi";
 import { parseUnits, stringToHex, pad } from "viem";
 import { CONTRACTS } from "@/lib/contracts";
+import { scrubImageLocally } from "@/lib/privacy-shield";
+import { encryptAndPinToIpfs } from "@/lib/encryption";
 
 const steps = ["Upload Images", "Define Labels", "Set Budget", "Fund Escrow"];
 
@@ -48,10 +50,6 @@ export default function CompanyUpload() {
         const amountParsed = parseUnits(totalBudget.toString(), 6);
         let txHash = "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
 
-import { scrubImageLocally } from "@/lib/privacy-shield";
-import { encryptAndPinToIpfs } from "@/lib/encryption";
-
-// ... inside fund function
         const uploadedImageKeys: string[] = [];
         if (uploadedFiles.length > 0) {
             toast.loading("Xai Privacy Shield: Anonymizing & Encrypting locally...", { id: "scrub" });
