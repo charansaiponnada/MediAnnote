@@ -143,7 +143,7 @@ export default function AnnotateWorkspace({
             const cw = canvas?.width || 800;
             const ch = canvas?.height || 800;
 
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api/py";
             const response = await fetch(`${API_URL}/caption`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
