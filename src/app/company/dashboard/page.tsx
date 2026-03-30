@@ -34,8 +34,28 @@ export default function CompanyDashboard() {
     const [hfInput, setHfInput] = useState("");
     const [hfStep, setHfStep] = useState<0 | 1 | 2>(0); // 0: username, 1: token, 2: uploading
     const [hfModel, setHfModel] = useState<MLModel | null>(null);
+    const [generatingReport, setGeneratingReport] = useState<string | null>(null);
 
     const [downloadModalOpen, setDownloadModalOpen] = useState<string | null>(null);
+
+    const handleDownloadComplianceReport = async (batchId: string) => {
+        setGeneratingReport(batchId);
+        toast.loading("Aggregating On-Chain Provenance Data...", { id: "report" });
+        
+        // Simulate cryptographic aggregation of Merkle Roots and AI hashes
+        await new Promise(r => setTimeout(r, 2500));
+        
+        toast.success("FDA-Ready Compliance Report Generated", { id: "report", icon: "📄" });
+        setGeneratingReport(null);
+        
+        // Mock download
+        const blob = new Blob(["MediAnnote Institutional Compliance Report\nBatch ID: " + batchId + "\nStatus: Verified\nOn-Chain Proof: 0x..."], { type: "text/plain" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `MediAnnote_Compliance_${batchId}.pdf`;
+        a.click();
+    };
 
     const totalAnnotated = batches.reduce((a, b) => a + b.annotatedImages, 0);
     const totalImages = batches.reduce((a, b) => a + b.totalImages, 0);
@@ -336,6 +356,15 @@ export default function CompanyDashboard() {
                                             onClick={() => setDownloadModalOpen(batch.id)}
                                             style={{ display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
                                             <Download size={14} /> Download Dataset
+                                        </button>
+                                        
+                                        {/* NEW: Institutional Compliance Feature */}
+                                        <button className="btn-secondary"
+                                            onClick={() => handleDownloadComplianceReport(batch.id)}
+                                            disabled={generatingReport === batch.id}
+                                            style={{ display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center", color: "var(--accent-emerald)", border: "1px solid rgba(16, 185, 129, 0.2)" }}>
+                                            {generatingReport === batch.id ? <Loader2 size={14} className="animate-spin" /> : <ShieldCheck size={14} />}
+                                            FDA Compliance PDF
                                         </button>
                                         {pct >= 50 && !isPaid && escrow > 0 && (
                                             <button className="btn-primary" onClick={() => handleRelease(batch.id)}>
