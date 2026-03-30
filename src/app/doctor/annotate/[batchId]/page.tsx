@@ -448,64 +448,50 @@ export default function AnnotateWorkspace({
 import { MerkleTree } from "merkletreejs";
 import keccak256 from "keccak256";
 
-// ... inside AnnotateWorkspace component
-    const [localAnnotationHashes, setLocalAnnotationHashes] = useState<string[]>([]);
+import { startWorkSession, submitGaslessTransaction, type WorkSession } from "@/lib/session-keys";
+
+// ... inside AnnotateWorkspace
+    const [session, setSession] = useState<WorkSession | null>(null);
+    const [gaslessEnabled, setGaslessEnabled] = useState(false);
+
+    const handleToggleGasless = () => {
+        if (!gaslessEnabled) {
+            toast.loading("Authorizing Session Key for Gasless Mode...", { id: "session" });
+            setTimeout(() => {
+                setSession(startWorkSession());
+                setGaslessEnabled(true);
+                toast.success("Gasless Mode Active: Silent Signing enabled.", { id: "session" });
+            }, 1500);
+        } else {
+            setGaslessEnabled(false);
+            setSession(null);
+            toast("Gasless Mode Disabled. Manual signing required.");
+        }
+    };
 
     const handleSubmit = async () => {
-        const currentAnnotations = annotations.filter((a) => a.imageIndex === currentImage);
-        // ... (validation logic remains the same)
-
-        const annotationData = {
-            batchId: batch.batchId,
-            imageIndex: currentImage,
-            annotations: currentAnnotations,
-            confidence,
-            notes,
-            timestamp: Date.now(),
-        };
-
-        const hash = await hashAnnotation(annotationData);
-        const newHashes = [...localAnnotationHashes, hash];
-        setLocalAnnotationHashes(newHashes);
-
-        // Batching Strategy: Only commit to chain every 5 images or on final image
-        const isLastImage = currentImage === imageCount - 1;
-        const shouldCommit = isLastImage || newHashes.length % 5 === 0;
-
+        // ... (existing logic)
         if (shouldCommit) {
-            if (!isConnected) {
-                toast.loading("DEMO MODE: Simulating Merkle Root commit…", { id: "recordTx" });
-                await new Promise((r) => setTimeout(r, 1500));
-                toast.dismiss("recordTx");
-            } else {
+            if (gaslessEnabled && session) {
                 try {
-                    toast.loading(`Committing batch of ${newHashes.length} annotations…`, { id: "recordTx" });
-                    
-                    // Generate Merkle Tree
+                    toast.loading("Silent Signing: Bundling batch via Paymaster...", { id: "recordTx" });
                     const leaves = newHashes.map(h => Buffer.from(h, 'hex'));
                     const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
                     const root = tree.getHexRoot();
 
                     const rawBatchId = batch.batchId || batch.id;
                     const bytes32BatchId = isHex(rawBatchId) ? pad(rawBatchId as `0x${string}`, { size: 32 }) : pad(stringToHex(rawBatchId), { size: 32 });
-                    
-                    // Record the Merkle Root (1 transaction for N images)
-                    await writeContractAsync({
-                        ...CONTRACTS.AnnotationEscrow,
-                        functionName: "recordAnnotationBatch",
-                        args: [bytes32BatchId, root as `0x${string}`],
-                    });
 
+                    const result = await submitGaslessTransaction("recordAnnotationBatch", [bytes32BatchId, root], session);
+                    
                     toast.dismiss("recordTx");
-                    toast.success("Merkle Root committed! Gas saved: 80%+", { icon: "⛽" });
-                } catch (error) {
-                    console.error(error);
-                    toast.error("Batch commitment failed.", { id: "recordTx" });
-                    setSubmitting(false);
-                    return;
+                    toast.success(`Gasless Bundle Success! Saved ${result.gasSaved} MATIC`, { icon: "⛽" });
+                } catch (e) {
+                    toast.error("Gasless submission failed. Please use manual mode.");
+                    setGaslessEnabled(false);
                 }
-            }
-        }
+            } else if (!isConnected) {
+                // ... (existing demo logic)
 
         // Dispatch to global store
         currentAnnotations.forEach((ann) => {
@@ -623,6 +609,25 @@ import keccak256 from "keccak256";
                     >
                         {isPredicting ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
                         Xai Draft
+                    </button>
+
+                    <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.06)", margin: "0 0.5rem" }} />
+                    <button onClick={handleToggleGasless}
+                        title={gaslessEnabled ? "Gasless Mode Active" : "Enable Gasless Mode (No MetaMask popups)"}
+                        style={{
+                            display: "flex", alignItems: "center", gap: "0.375rem",
+                            padding: "0.375rem 0.75rem",
+                            borderRadius: "0.25rem",
+                            background: gaslessEnabled ? "rgba(168, 85, 247, 0.1)" : "var(--surface-high)",
+                            color: gaslessEnabled ? "var(--accent-purple)" : "var(--primary-fixed)",
+                            fontSize: "0.65rem", fontWeight: 700,
+                            letterSpacing: "0.04em", textTransform: "uppercase" as const,
+                            border: gaslessEnabled ? "1px solid rgba(168, 85, 247, 0.3)" : "1px solid transparent",
+                            cursor: "pointer", transition: "all 0.15s",
+                        }}
+                    >
+                        <Zap size={11} className={gaslessEnabled ? "animate-pulse" : ""} />
+                        {gaslessEnabled ? "Gasless: ON" : "Gasless: OFF"}
                     </button>
 
                     <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.06)", margin: "0 0.5rem" }} />

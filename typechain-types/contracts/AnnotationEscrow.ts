@@ -35,6 +35,7 @@ export interface AnnotationEscrowInterface extends Interface {
       | "getAnnotationHashes"
       | "getBatchAnnotators"
       | "isBatchFunded"
+      | "isTrustedForwarder"
       | "owner"
       | "paymentToken"
       | "platformFeeBps"
@@ -45,6 +46,7 @@ export interface AnnotationEscrowInterface extends Interface {
       | "renounceOwnership"
       | "transferOwnership"
       | "treasury"
+      | "trustedForwarder"
       | "verifyAnnotation"
   ): FunctionFragment;
 
@@ -91,6 +93,10 @@ export interface AnnotationEscrowInterface extends Interface {
     functionFragment: "isBatchFunded",
     values: [BytesLike]
   ): string;
+  encodeFunctionData(
+    functionFragment: "isTrustedForwarder",
+    values: [AddressLike]
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "paymentToken",
@@ -126,6 +132,10 @@ export interface AnnotationEscrowInterface extends Interface {
   ): string;
   encodeFunctionData(functionFragment: "treasury", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "trustedForwarder",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "verifyAnnotation",
     values: [BytesLike, BytesLike, BytesLike[]]
   ): string;
@@ -158,6 +168,10 @@ export interface AnnotationEscrowInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "isBatchFunded",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "isTrustedForwarder",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -194,6 +208,10 @@ export interface AnnotationEscrowInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "treasury", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "trustedForwarder",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "verifyAnnotation",
     data: BytesLike
@@ -434,6 +452,12 @@ export interface AnnotationEscrow extends BaseContract {
 
   isBatchFunded: TypedContractMethod<[batchId: BytesLike], [boolean], "view">;
 
+  isTrustedForwarder: TypedContractMethod<
+    [forwarder: AddressLike],
+    [boolean],
+    "view"
+  >;
+
   owner: TypedContractMethod<[], [string], "view">;
 
   paymentToken: TypedContractMethod<[], [string], "view">;
@@ -473,6 +497,8 @@ export interface AnnotationEscrow extends BaseContract {
   >;
 
   treasury: TypedContractMethod<[], [string], "view">;
+
+  trustedForwarder: TypedContractMethod<[], [string], "view">;
 
   verifyAnnotation: TypedContractMethod<
     [batchId: BytesLike, annotationHash: BytesLike, proof: BytesLike[]],
@@ -535,6 +561,9 @@ export interface AnnotationEscrow extends BaseContract {
     nameOrSignature: "isBatchFunded"
   ): TypedContractMethod<[batchId: BytesLike], [boolean], "view">;
   getFunction(
+    nameOrSignature: "isTrustedForwarder"
+  ): TypedContractMethod<[forwarder: AddressLike], [boolean], "view">;
+  getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
@@ -579,6 +608,9 @@ export interface AnnotationEscrow extends BaseContract {
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "treasury"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "trustedForwarder"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "verifyAnnotation"

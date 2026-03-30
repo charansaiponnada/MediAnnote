@@ -5,13 +5,13 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
 /**
  * @title AnnotationEscrow
- * @dev Holds USDC in escrow for annotation batches and releases to annotators 
- *      minus a 10% platform fee.
+ * @dev Holds USDC in escrow for annotation batches. Supports Gasless Meta-Transactions (EIP-2771).
  */
-contract AnnotationEscrow is Ownable, ReentrancyGuard {
+contract AnnotationEscrow is Ownable, ReentrancyGuard, ERC2771Context {
     IERC20 public paymentToken; // Mock USDC
     address public treasury;
     uint256 public platformFeeBps = 1000; // 10% = 1000 bps
@@ -25,9 +25,9 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
     }
 
     mapping(bytes32 => Batch) public batches;
-    mapping(bytes32 => bytes32[]) public annotationHashes; // batchId => array of hashes
-    mapping(bytes32 => bytes32) public batchMerkleRoots; // batchId => Merkle Root of all annotations
-    mapping(bytes32 => bytes32[]) public aiInsightHashes; // batchId => array of AI-generated caption hashes
+    mapping(bytes32 => bytes32[]) public annotationHashes; 
+    mapping(bytes32 => bytes32) public batchMerkleRoots;
+    mapping(bytes32 => bytes32[]) public aiInsightHashes;
 
     event FundsDeposited(
         bytes32 indexed batchId,
@@ -66,10 +66,27 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard {
 
     constructor(
         address _paymentToken,
-        address _treasury
-    ) Ownable(msg.sender) {
+        address _treasury,
+        address _trustedForwarder
+    ) 
+        Ownable(msg.sender) 
+        ERC2771Context(_trustedForwarder) 
+    {
         paymentToken = IERC20(_paymentToken);
         treasury = _treasury;
+    }
+
+    // Override Context functions to support Meta-Transactions
+    function _msgSender() internal view override(Context, ERC2771Context) returns (address) {
+        return ERC2771Context._msgSender();
+    }
+
+    function _msgData() internal view override(Context, ERC2771Context) returns (bytes calldata) {
+        return ERC2771Context._msgData();
+    }
+
+    function _contextSuffixLength() internal view override(Context, ERC2771Context) returns (uint256) {
+        return ERC2771Context._contextSuffixLength();
     }
 
     /**
