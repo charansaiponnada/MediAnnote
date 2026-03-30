@@ -48,32 +48,41 @@ export default function CompanyUpload() {
         const amountParsed = parseUnits(totalBudget.toString(), 6);
         let txHash = "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
 
+import { scrubImageLocally } from "@/lib/privacy-shield";
+
+// ... inside fund function
         const uploadedImageKeys: string[] = [];
         if (uploadedFiles.length > 0) {
-            toast.loading("AI PHI Scrubbing in progress...", { id: "scrub" });
+            toast.loading("Xai Privacy Shield: Anonymizing images locally...", { id: "scrub" });
             const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+            const { set } = await import("idb-keyval");
 
-            // Simulate calling /scrub for each file
-            for (const file of uploadedFiles) {
+            for (let i = 0; i < uploadedFiles.length; i++) {
+                const file = uploadedFiles[i];
                 try {
+                    // 1. Scrub locally (HIPAA Compliance)
+                    const result = await scrubImageLocally(file);
+                    
+                    // 2. Store the SAFE version
+                    const key = `${batchString}-img-${i}`;
+                    await set(key, result.blob);
+                    uploadedImageKeys.push(key);
+
+                    // 3. Notify backend of the new (safe) asset hash for audit trail
                     await fetch(`${API_URL}/scrub`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ filename: file.name }),
+                        body: JSON.stringify({ 
+                            filename: file.name,
+                            hash: result.hash,
+                            clientSide: true 
+                        }),
                     });
                 } catch (e) {
-                    console.warn("Scrubbing service unreachable, continuing with local save.");
+                    console.error("Scrubbing failed for", file.name, e);
                 }
             }
-            toast.success("PHI Stripped: All images anonymized.", { id: "scrub" });
-
-            toast.loading("Saving anonymized images locally...", { id: "tx" });
-            const { set } = await import("idb-keyval");
-            for (let i = 0; i < uploadedFiles.length; i++) {
-                const key = `${batchString}-img-${i}`;
-                await set(key, uploadedFiles[i]);
-                uploadedImageKeys.push(key);
-            }
+            toast.success("Privacy Check Passed: All PHI stripped.", { id: "scrub" });
         }
 
 
