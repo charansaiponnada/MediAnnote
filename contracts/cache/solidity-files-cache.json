@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\projects\\Hackathons\\MediAnnote\\contracts\\AnnotationEscrow.sol": {
-      "lastModificationDate": 1774882769847,
-      "contentHash": "65e8d9de582441a311769d71322ff508",
+      "lastModificationDate": 1774885779431,
+      "contentHash": "6a820a35427664e055d72a9887eed96f",
       "sourceName": "contracts/AnnotationEscrow.sol",
       "solcConfig": {
         "version": "0.8.28",

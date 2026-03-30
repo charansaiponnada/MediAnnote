@@ -22,6 +22,7 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard, ERC2771Context {
         address[] annotators;
         bool released;
         bool exists;
+        bool inDispute; // Governance flag
     }
 
     mapping(bytes32 => Batch) public batches;
@@ -35,6 +36,17 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard, ERC2771Context {
         uint256 amount,
         address[] annotators,
         uint256 timestamp
+    );
+
+    event RewardIncreased(
+        bytes32 indexed batchId,
+        uint256 additionalAmount,
+        uint256 newTotalAmount
+    );
+
+    event BatchDisputed(
+        bytes32 indexed batchId,
+        address indexed disputedBy
     );
 
     event FundsReleased(
@@ -112,7 +124,8 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard, ERC2771Context {
             totalAmount: amount,
             annotators: new address[](0),
             released: false,
-            exists: true
+            exists: true,
+            inDispute: false
         });
 
         emit FundsDeposited(batchId, msg.sender, amount, new address[](0), block.timestamp);
@@ -241,5 +254,32 @@ contract AnnotationEscrow is Ownable, ReentrancyGuard, ERC2771Context {
 
     function isBatchFunded(bytes32 batchId) external view returns (bool) {
         return batches[batchId].exists && !batches[batchId].released;
+    }
+
+    /**
+     * @notice Increase the reward for a highly complex batch (Dynamic Pricing)
+     */
+    function increaseReward(bytes32 batchId, uint256 additionalAmount) external {
+        Batch storage batch = batches[batchId];
+        require(batch.exists, "Batch does not exist");
+        require(!batch.released, "Batch already released");
+        require(msg.sender == batch.company, "Only company can increase reward");
+
+        require(paymentToken.transferFrom(msg.sender, address(this), additionalAmount), "Transfer failed");
+        
+        batch.totalAmount += additionalAmount;
+        emit RewardIncreased(batchId, additionalAmount, batch.totalAmount);
+    }
+
+    /**
+     * @notice Dispute a batch if consensus is contested by Elite-tier review
+     */
+    function disputeBatch(bytes32 batchId) external onlyOwner {
+        Batch storage batch = batches[batchId];
+        require(batch.exists, "Batch does not exist");
+        require(!batch.released, "Batch already released");
+        
+        batch.inDispute = true;
+        emit BatchDisputed(batchId, msg.sender);
     }
 }

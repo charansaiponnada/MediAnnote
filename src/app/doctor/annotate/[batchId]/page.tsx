@@ -592,8 +592,8 @@ import { startWorkSession, submitGaslessTransaction, type WorkSession } from "@/
                     })}
                     <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.06)", margin: "0 0.5rem" }} />
                     
-                    <button onClick={handleAiDraft} disabled={isPredicting || !loadedImage}
-                        title="Generate AI-Assisted Draft"
+                    <button onClick={handleAiDraft} disabled={isPredicting || !loadedImage || currentAnnotations.length === 0}
+                        title={currentAnnotations.length === 0 ? "Blind Review: Make your first manual mark before using Xai Draft" : "Generate AI-Assisted Draft"}
                         style={{
                             display: "flex", alignItems: "center", gap: "0.375rem",
                             padding: "0.375rem 0.75rem",
@@ -604,7 +604,7 @@ import { startWorkSession, submitGaslessTransaction, type WorkSession } from "@/
                             letterSpacing: "0.04em", textTransform: "uppercase" as const,
                             border: "1px solid rgba(34, 197, 94, 0.2)", cursor: "pointer",
                             transition: "all 0.15s",
-                            opacity: (!loadedImage) ? 0.5 : 1,
+                            opacity: (!loadedImage || currentAnnotations.length === 0) ? 0.5 : 1,
                         }}
                     >
                         {isPredicting ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}

@@ -31,9 +31,11 @@ export interface AnnotationEscrowInterface extends Interface {
       | "batchMerkleRoots"
       | "batches"
       | "deposit"
+      | "disputeBatch"
       | "getAiInsightHashes"
       | "getAnnotationHashes"
       | "getBatchAnnotators"
+      | "increaseReward"
       | "isBatchFunded"
       | "isTrustedForwarder"
       | "owner"
@@ -55,9 +57,11 @@ export interface AnnotationEscrowInterface extends Interface {
       | "AiInsightRecorded"
       | "AnnotationBatchRecorded"
       | "AnnotationRecorded"
+      | "BatchDisputed"
       | "FundsDeposited"
       | "FundsReleased"
       | "OwnershipTransferred"
+      | "RewardIncreased"
   ): EventFragment;
 
   encodeFunctionData(
@@ -78,6 +82,10 @@ export interface AnnotationEscrowInterface extends Interface {
     values: [BytesLike, BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "disputeBatch",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getAiInsightHashes",
     values: [BytesLike]
   ): string;
@@ -88,6 +96,10 @@ export interface AnnotationEscrowInterface extends Interface {
   encodeFunctionData(
     functionFragment: "getBatchAnnotators",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "increaseReward",
+    values: [BytesLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "isBatchFunded",
@@ -155,6 +167,10 @@ export interface AnnotationEscrowInterface extends Interface {
   decodeFunctionResult(functionFragment: "batches", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "disputeBatch",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getAiInsightHashes",
     data: BytesLike
   ): Result;
@@ -164,6 +180,10 @@ export interface AnnotationEscrowInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getBatchAnnotators",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "increaseReward",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -290,6 +310,19 @@ export namespace AnnotationRecordedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace BatchDisputedEvent {
+  export type InputTuple = [batchId: BytesLike, disputedBy: AddressLike];
+  export type OutputTuple = [batchId: string, disputedBy: string];
+  export interface OutputObject {
+    batchId: string;
+    disputedBy: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace FundsDepositedEvent {
   export type InputTuple = [
     batchId: BytesLike,
@@ -349,6 +382,28 @@ export namespace OwnershipTransferredEvent {
   export interface OutputObject {
     previousOwner: string;
     newOwner: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace RewardIncreasedEvent {
+  export type InputTuple = [
+    batchId: BytesLike,
+    additionalAmount: BigNumberish,
+    newTotalAmount: BigNumberish
+  ];
+  export type OutputTuple = [
+    batchId: string,
+    additionalAmount: bigint,
+    newTotalAmount: bigint
+  ];
+  export interface OutputObject {
+    batchId: string;
+    additionalAmount: bigint;
+    newTotalAmount: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -416,11 +471,12 @@ export interface AnnotationEscrow extends BaseContract {
   batches: TypedContractMethod<
     [arg0: BytesLike],
     [
-      [string, bigint, boolean, boolean] & {
+      [string, bigint, boolean, boolean, boolean] & {
         company: string;
         totalAmount: bigint;
         released: boolean;
         exists: boolean;
+        inDispute: boolean;
       }
     ],
     "view"
@@ -431,6 +487,8 @@ export interface AnnotationEscrow extends BaseContract {
     [void],
     "nonpayable"
   >;
+
+  disputeBatch: TypedContractMethod<[batchId: BytesLike], [void], "nonpayable">;
 
   getAiInsightHashes: TypedContractMethod<
     [batchId: BytesLike],
@@ -448,6 +506,12 @@ export interface AnnotationEscrow extends BaseContract {
     [batchId: BytesLike],
     [string[]],
     "view"
+  >;
+
+  increaseReward: TypedContractMethod<
+    [batchId: BytesLike, additionalAmount: BigNumberish],
+    [void],
+    "nonpayable"
   >;
 
   isBatchFunded: TypedContractMethod<[batchId: BytesLike], [boolean], "view">;
@@ -532,11 +596,12 @@ export interface AnnotationEscrow extends BaseContract {
   ): TypedContractMethod<
     [arg0: BytesLike],
     [
-      [string, bigint, boolean, boolean] & {
+      [string, bigint, boolean, boolean, boolean] & {
         company: string;
         totalAmount: bigint;
         released: boolean;
         exists: boolean;
+        inDispute: boolean;
       }
     ],
     "view"
@@ -549,6 +614,9 @@ export interface AnnotationEscrow extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "disputeBatch"
+  ): TypedContractMethod<[batchId: BytesLike], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "getAiInsightHashes"
   ): TypedContractMethod<[batchId: BytesLike], [string[]], "view">;
   getFunction(
@@ -557,6 +625,13 @@ export interface AnnotationEscrow extends BaseContract {
   getFunction(
     nameOrSignature: "getBatchAnnotators"
   ): TypedContractMethod<[batchId: BytesLike], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "increaseReward"
+  ): TypedContractMethod<
+    [batchId: BytesLike, additionalAmount: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "isBatchFunded"
   ): TypedContractMethod<[batchId: BytesLike], [boolean], "view">;
@@ -642,6 +717,13 @@ export interface AnnotationEscrow extends BaseContract {
     AnnotationRecordedEvent.OutputObject
   >;
   getEvent(
+    key: "BatchDisputed"
+  ): TypedContractEvent<
+    BatchDisputedEvent.InputTuple,
+    BatchDisputedEvent.OutputTuple,
+    BatchDisputedEvent.OutputObject
+  >;
+  getEvent(
     key: "FundsDeposited"
   ): TypedContractEvent<
     FundsDepositedEvent.InputTuple,
@@ -661,6 +743,13 @@ export interface AnnotationEscrow extends BaseContract {
     OwnershipTransferredEvent.InputTuple,
     OwnershipTransferredEvent.OutputTuple,
     OwnershipTransferredEvent.OutputObject
+  >;
+  getEvent(
+    key: "RewardIncreased"
+  ): TypedContractEvent<
+    RewardIncreasedEvent.InputTuple,
+    RewardIncreasedEvent.OutputTuple,
+    RewardIncreasedEvent.OutputObject
   >;
 
   filters: {
@@ -697,6 +786,17 @@ export interface AnnotationEscrow extends BaseContract {
       AnnotationRecordedEvent.OutputObject
     >;
 
+    "BatchDisputed(bytes32,address)": TypedContractEvent<
+      BatchDisputedEvent.InputTuple,
+      BatchDisputedEvent.OutputTuple,
+      BatchDisputedEvent.OutputObject
+    >;
+    BatchDisputed: TypedContractEvent<
+      BatchDisputedEvent.InputTuple,
+      BatchDisputedEvent.OutputTuple,
+      BatchDisputedEvent.OutputObject
+    >;
+
     "FundsDeposited(bytes32,address,uint256,address[],uint256)": TypedContractEvent<
       FundsDepositedEvent.InputTuple,
       FundsDepositedEvent.OutputTuple,
@@ -728,6 +828,17 @@ export interface AnnotationEscrow extends BaseContract {
       OwnershipTransferredEvent.InputTuple,
       OwnershipTransferredEvent.OutputTuple,
       OwnershipTransferredEvent.OutputObject
+    >;
+
+    "RewardIncreased(bytes32,uint256,uint256)": TypedContractEvent<
+      RewardIncreasedEvent.InputTuple,
+      RewardIncreasedEvent.OutputTuple,
+      RewardIncreasedEvent.OutputObject
+    >;
+    RewardIncreased: TypedContractEvent<
+      RewardIncreasedEvent.InputTuple,
+      RewardIncreasedEvent.OutputTuple,
+      RewardIncreasedEvent.OutputObject
     >;
   };
 }
