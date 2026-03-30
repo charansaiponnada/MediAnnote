@@ -20,6 +20,7 @@ const sidebarItems = [
   { href: "/docs/features", label: "Features", icon: Zap },
   { href: "/docs/api", label: "API Reference", icon: Code },
   { href: "/docs/usage", label: "Usage Guide", icon: Settings },
+  { href: "/docs/case-studies", label: "Case Studies", icon: TrendingUp },
   { href: "/docs/developer-guide", label: "Developer Guide", icon: Code },
   { href: "/docs/limitations", label: "Limitations", icon: AlertTriangle },
 ];
