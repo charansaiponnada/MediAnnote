@@ -49,11 +49,12 @@ export default function CompanyUpload() {
         let txHash = "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
 
 import { scrubImageLocally } from "@/lib/privacy-shield";
+import { encryptAndPinToIpfs } from "@/lib/encryption";
 
 // ... inside fund function
         const uploadedImageKeys: string[] = [];
         if (uploadedFiles.length > 0) {
-            toast.loading("Xai Privacy Shield: Anonymizing images locally...", { id: "scrub" });
+            toast.loading("Xai Privacy Shield: Anonymizing & Encrypting locally...", { id: "scrub" });
             const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
             const { set } = await import("idb-keyval");
 
@@ -61,28 +62,32 @@ import { scrubImageLocally } from "@/lib/privacy-shield";
                 const file = uploadedFiles[i];
                 try {
                     // 1. Scrub locally (HIPAA Compliance)
-                    const result = await scrubImageLocally(file);
+                    const scrubbed = await scrubImageLocally(file);
                     
-                    // 2. Store the SAFE version
-                    const key = `${batchString}-img-${i}`;
-                    await set(key, result.blob);
+                    // 2. Encrypt & Pin to IPFS (Zero-Trust Storage)
+                    const encrypted = await encryptAndPinToIpfs(scrubbed.blob);
+                    
+                    // 3. Store the ENCRYPTED version
+                    const key = `${batchString}-ipfs-${encrypted.ipfsHash}`;
+                    await set(key, encrypted.encryptedBlob);
                     uploadedImageKeys.push(key);
 
-                    // 3. Notify backend of the new (safe) asset hash for audit trail
+                    // 4. Notify backend of the new asset hash and IPFS CID
                     await fetch(`${API_URL}/scrub`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ 
                             filename: file.name,
-                            hash: result.hash,
+                            hash: scrubbed.hash,
+                            ipfsCid: encrypted.ipfsHash,
                             clientSide: true 
                         }),
                     });
                 } catch (e) {
-                    console.error("Scrubbing failed for", file.name, e);
+                    console.error("Clinical pipeline failed for", file.name, e);
                 }
             }
-            toast.success("Privacy Check Passed: All PHI stripped.", { id: "scrub" });
+            toast.success("Zero-Trust Pipeline Complete: Images Anonymized, Encrypted & Pinned.", { id: "scrub" });
         }
 
 

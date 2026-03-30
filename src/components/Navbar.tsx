@@ -21,6 +21,7 @@ import { useState } from "react";
 const doctorLinks = [
     { href: "/doctor/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/doctor/tasks", label: "Tasks", icon: ListTodo },
+    { href: "/doctor/disputes", label: "Medical Court", icon: Shield },
     { href: "/doctor/profile", label: "Profile", icon: User },
 ];
 const companyLinks = [
