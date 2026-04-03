@@ -6,7 +6,7 @@ import { formatUSDCRaw } from "@/lib/utils";
 import Link from "next/link";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import {
-    ExternalLink, Brain, Loader2, CheckCircle, Zap,
+    ExternalLink, Brain, Loader2, CheckCircle, Zap, ShieldCheck,
     BarChart3, Cpu, Play, Settings, FileText, Download, Database, ChevronRight, X
 } from "lucide-react";
 import toast from "react-hot-toast";

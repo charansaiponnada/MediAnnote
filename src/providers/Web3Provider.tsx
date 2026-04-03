@@ -26,6 +26,10 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
             <QueryClientProvider client={queryClient}>
                 <ConnectKitProvider
                     theme="midnight"
+                    options={{
+                        initialChainId: 0,
+                        showBalance: true,
+                    }}
                     customTheme={{
                         "--ck-font-family": '"Inter", sans-serif',
                     }}
