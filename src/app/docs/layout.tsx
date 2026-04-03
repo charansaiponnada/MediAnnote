@@ -9,7 +9,8 @@ import {
   Code, 
   Play, 
   AlertTriangle,
-  ChevronRight
+  ChevronRight,
+  TrendingUp
 } from "lucide-react";
 
 const sidebarItems = [
